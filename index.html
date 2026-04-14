@@ -1,260 +1,806 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MóveisPro — Gestão Clean</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MóveisPro — Sistema Integrado</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #C9A84C;
+            --bg: #F4F6F9;
+            --card: #FFFFFF;
+            --text: #2D3436;
+            --border: #E8ECF0;
+            --success: #27ae60;
+            --danger: #d63031;
+            --warn: #e67e22;
+            --muted: #7f8c8d;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
 
-<script type="module">
-  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-  import { getFirestore, collection, onSnapshot, query, orderBy, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+        /* ── LOGIN ── */
+        #tela-login {
+            min-height: 100vh; display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(135deg, #f4f6f9 0%, #e8ecf0 100%);
+        }
+        .login-box {
+            background: white; border-radius: 16px; padding: 2.5rem 2rem;
+            width: 380px; max-width: 95vw; border: 1px solid var(--border);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+        }
+        .logo { font-family: 'Cormorant Garamond', serif; font-size: 2.8rem; font-weight: 700; line-height: 1; margin-bottom: 0.3rem; }
+        .logo span { color: var(--primary); }
+        .login-hint { font-size: 0.75rem; color: #bbb; margin-top: 1.2rem; text-align: center; }
 
-  // Configuração (Substitua pelos seus dados do console.firebase.google.com)
-  const firebaseConfig = {
-    apiKey: "SUA_API_KEY",
-    authDomain: "SEU_PROJETO.firebaseapp.com",
-    projectId: "SEU_PROJETO_ID",
-    storageBucket: "SEU_PROJETO.appspot.com",
-    messagingSenderId: "SEU_SENDER_ID",
-    appId: "SEU_APP_ID"
-  };
+        /* ── LAYOUT ── */
+        #app { display: none; }
+        .navbar {
+            background: white; padding: 0.9rem 5%; display: flex;
+            justify-content: space-between; align-items: center;
+            border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 200;
+        }
+        .nav-logo { font-family: 'Cormorant Garamond', serif; font-weight: 700; font-size: 1.6rem; }
+        .nav-logo span { color: var(--primary); }
+        .nav-right { display: flex; align-items: center; gap: 16px; }
+        .perfil-badge {
+            font-size: 0.85rem; font-weight: 500; color: #555;
+            background: #f4f6f9; border-radius: 20px; padding: 5px 14px; border: 1px solid var(--border);
+        }
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
+        .tabs {
+            background: white; padding: 0 5%; display: flex; gap: 4px;
+            border-bottom: 1px solid var(--border); position: sticky; top: 57px; z-index: 199; overflow-x: auto;
+        }
+        .tab-btn {
+            padding: 14px 18px; border: none; background: none; cursor: pointer;
+            font-weight: 600; font-size: 0.9rem; color: #aaa;
+            border-bottom: 3px solid transparent; transition: all 0.2s; white-space: nowrap;
+        }
+        .tab-btn:hover { color: var(--primary); }
+        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
 
-  window.APP = { auth, db, user: null, perfil: null, produtos: [] };
+        .container { padding: 2rem 5%; max-width: 1280px; margin: 0 auto; }
 
-  // Monitor de Autenticação
-  onAuthStateChanged(auth, async (user) => {
-    if (user) {
-      const snap = await getDoc(doc(db, 'usuarios', user.uid));
-      APP.user = user;
-      APP.perfil = snap.exists() ? snap.data() : { nome: user.email, perfil: 'vendedor' };
-      document.getElementById('tela-login').style.display = 'none';
-      document.getElementById('tela-app').style.display = 'block';
-      carregarDados();
-    } else {
-      document.getElementById('tela-login').style.display = 'flex';
-      document.getElementById('tela-app').style.display = 'none';
-    }
-  });
+        /* ── CARDS ── */
+        .card {
+            background: white; border-radius: 12px; padding: 1.5rem;
+            border: 1px solid var(--border); margin-bottom: 1.5rem;
+        }
+        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.2rem; margin-bottom: 2rem; }
+        .stat-card { background: white; border-radius: 12px; padding: 1.4rem; border: 1px solid var(--border); }
+        .stat-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); }
+        .stat-value { font-size: 1.8rem; font-weight: 700; margin-top: 6px; }
 
-  window.fazerLogin = () => {
-    const email = document.getElementById('l-email').value;
-    const senha = document.getElementById('l-senha').value;
-    signInWithEmailAndPassword(auth, email, senha).catch(err => alert("Erro: " + err.message));
-  };
+        /* ── FORM ── */
+        label { display: block; font-size: 0.82rem; font-weight: 600; color: #666; margin-bottom: 4px; }
+        input[type=text], input[type=number], input[type=password], textarea, select {
+            width: 100%; padding: 10px 12px; border: 1px solid var(--border);
+            border-radius: 8px; font-family: inherit; font-size: 0.95rem;
+            outline: none; transition: border 0.2s; background: white; color: var(--text);
+            margin-bottom: 14px;
+        }
+        input:focus, textarea:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(201,168,76,0.12); }
+        textarea { resize: vertical; min-height: 72px; }
 
-  window.fazerLogout = () => signOut(auth);
+        /* ── BUTTONS ── */
+        .btn {
+            padding: 9px 18px; border: none; border-radius: 8px; font-weight: 700;
+            font-size: 0.88rem; cursor: pointer; transition: all 0.18s;
+            display: inline-flex; align-items: center; gap: 7px; line-height: 1;
+        }
+        .btn:hover { opacity: 0.88; transform: translateY(-1px); }
+        .btn:active { transform: translateY(0); }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger  { background: var(--danger);  color: white; }
+        .btn-ghost   { background: #f1f3f5; color: var(--text); }
+        .btn-icon    { padding: 7px 10px; font-size: 0.8rem; border-radius: 6px; }
 
-  function carregarDados() {
-    const q = query(collection(db, 'produtos'), orderBy('nome'));
-    onSnapshot(q, snap => {
-      APP.produtos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      renderEstoque();
-    });
-  }
-</script>
+        /* ── TABLE ── */
+        .table-wrap { border-radius: 12px; overflow: hidden; border: 1px solid var(--border); background: white; margin-bottom: 1.5rem; }
+        table { width: 100%; border-collapse: collapse; }
+        thead { background: #fafafa; }
+        th { text-align: left; padding: 11px 14px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); border-bottom: 1px solid var(--border); font-weight: 700; }
+        td { padding: 12px 14px; border-top: 1px solid var(--border); font-size: 0.93rem; vertical-align: middle; }
+        tr:hover td { background: #fdfdf9; }
 
-<style>
-:root {
-  --primary: #C9A84C; /* Dourado */
-  --bg: #F8F9FA;    /* Cinza quase branco */
-  --card: #FFFFFF;  /* Branco puro */
-  --text: #2D3436;  /* Grafite */
-  --text-light: #636E72;
-  --border: #EDF2F7;
-  --radius: 12px;
-}
+        /* ── BADGES ── */
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; }
+        .badge-ok   { background: #d4edda; color: #155724; }
+        .badge-warn { background: #fff3cd; color: #856404; }
+        .badge-bad  { background: #f8d7da; color: #721c24; }
+        .badge-count { background: var(--danger); color: white; font-size: 0.7rem; font-weight: 700; padding: 2px 7px; border-radius: 12px; margin-left: 6px; }
 
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'DM Sans', sans-serif;
-  margin: 0;
-}
+        /* ── MODAL ── */
+        .modal-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.45); align-items: center; justify-content: center;
+            z-index: 1000; backdrop-filter: blur(3px);
+        }
+        .modal-overlay.open { display: flex; }
+        .modal-box {
+            background: white; border-radius: 16px; padding: 2rem; width: 480px;
+            max-width: 95vw; max-height: 92vh; overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .modal-header h3 { font-size: 1.15rem; font-weight: 700; }
+        .close-btn { background: none; border: none; font-size: 1.3rem; cursor: pointer; color: #aaa; padding: 2px 6px; border-radius: 4px; }
+        .close-btn:hover { background: #f1f1f1; color: var(--text); }
 
-/* UI CLEAN */
-.topbar {
-  background: var(--card);
-  border-bottom: 1px solid var(--border);
-  padding: 1rem 2rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  position: sticky; top: 0; z-index: 100;
-}
-
-.card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: 0 4px 6px rgba(0,0,0,0.02);
-  padding: 1.5rem;
-  margin-bottom: 1rem;
-}
-
-.btn-primary {
-  background: var(--primary);
-  color: white;
-  border: none;
-  padding: 0.8rem 1.5rem;
-  border-radius: 8px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: opacity 0.2s;
-}
-
-.btn-primary:hover { opacity: 0.9; }
-
-/* LOGIN CLEAN */
-#tela-login {
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #FFF;
-}
-
-.login-box {
-  width: 100%;
-  max-width: 380px;
-  padding: 2.5rem;
-  text-align: center;
-  border: 1px solid var(--border);
-  border-radius: 20px;
-}
-
-input {
-  width: 100%;
-  padding: 0.8rem;
-  margin: 0.5rem 0;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: #F1F3F5;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-th {
-  text-align: left;
-  padding: 1rem;
-  color: var(--text-light);
-  font-size: 0.8rem;
-  text-transform: uppercase;
-}
-
-td {
-  padding: 1rem;
-  border-top: 1px solid var(--border);
-}
-
-.badge-status {
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: bold;
-}
-.status-disponivel { background: #E3FCEF; color: #006644; }
-</style>
+        /* ── MISC ── */
+        .row { display: flex; gap: 12px; }
+        .row > * { flex: 1; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 10px; }
+        .page-header h2 { font-size: 1.35rem; font-weight: 700; }
+        .empty-state { text-align: center; padding: 3rem; color: #bbb; }
+        .empty-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+        .alerta-bar { background: #fff8e1; border: 1px solid #ffe082; border-radius: 8px; padding: 10px 16px; margin-bottom: 10px; font-size: 0.88rem; display: flex; align-items: center; gap: 8px; }
+        .pedido-card { border-left: 4px solid var(--primary); border-radius: 0 10px 10px 0; }
+        .pedido-card.aprovado { border-left-color: var(--success); }
+        .pedido-card.pendente { border-left-color: var(--warn); }
+        .info-box { background: #f8f9fa; border-radius: 8px; padding: 14px; margin-bottom: 12px; }
+        .margem-box { background: #f0faf4; border: 1px solid #c3e6cb; border-radius: 8px; padding: 10px 14px; font-size: 0.85rem; margin-bottom: 14px; }
+        .rank-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 4px; border-bottom: 1px solid var(--border); }
+        .rank-row:last-child { border-bottom: none; }
+        .divider { height: 1px; background: var(--border); margin: 1.2rem 0; }
+    </style>
 </head>
 <body>
 
+<!-- ═══════════════════ LOGIN ═══════════════════ -->
 <div id="tela-login">
-  <div class="login-box">
-    <h1 style="font-family:'Cormorant Garamond'">Móveis<span style="color:var(--primary)">Pro</span></h1>
-    <p style="color:var(--text-light)">Acesse sua conta</p>
-    <input type="email" id="l-email" placeholder="E-mail">
-    <input type="password" id="l-senha" placeholder="Senha">
-    <button class="btn-primary" style="width:100%; margin-top:1rem" onclick="fazerLogin()">Entrar</button>
-  </div>
+    <div class="login-box">
+        <div style="text-align:center; margin-bottom:1.8rem">
+            <div class="logo">Móveis<span>Pro</span></div>
+            <p style="color:#aaa; font-size:0.9rem; margin-top:4px">Sistema de Gestão</p>
+        </div>
+        <label>Usuário</label>
+        <input type="text" id="input-user" placeholder="admin, vend1, vend2 ou vend3" onkeydown="if(event.key==='Enter') login()">
+        <label>Senha</label>
+        <input type="password" id="input-pass" placeholder="senha" onkeydown="if(event.key==='Enter') login()">
+        <p id="login-erro" style="color:var(--danger);font-size:0.88rem;margin-bottom:12px;display:none">⚠ Usuário ou senha inválidos.</p>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;font-size:1rem" onclick="login()">Entrar</button>
+        <p class="login-hint">admin/123 &nbsp;·&nbsp; vend1/123 &nbsp;·&nbsp; vend2/123 &nbsp;·&nbsp; vend3/123</p>
+    </div>
 </div>
 
-<div id="tela-app" style="display:none">
-  <nav class="topbar">
-    <div style="font-weight:bold; font-size:1.2rem">Móveis<span style="color:var(--primary)">Pro</span></div>
-    <button onclick="fazerLogout()" style="background:none; border:none; color:var(--text-light); cursor:pointer">Sair</button>
-  </nav>
+<!-- ═══════════════════ APP ═══════════════════ -->
+<div id="app">
+    <nav class="navbar">
+        <div class="nav-logo">Móveis<span>Pro</span></div>
+        <div class="nav-right">
+            <span class="perfil-badge" id="nome-perfil"></span>
+            <button class="btn btn-ghost" onclick="logout()">Sair</button>
+        </div>
+    </nav>
+    <div class="tabs" id="nav-tabs"></div>
 
-  <main style="padding: 2rem; max-width: 1200px; margin: 0 auto;">
-    <div style="display:flex; justify-content:space-between; margin-bottom:2rem">
-      <h2>Estoque Central</h2>
-      <button class="btn-primary" onclick="gerarCatalogoPDF()">Gerar Catálogo PDF Clean</button>
-    </div>
+    <main class="container">
+        <!-- DASHBOARD (admin) -->
+        <section id="tab-dash" class="content" style="display:none">
+            <div class="stat-grid">
+                <div class="stat-card"><p class="stat-label">💰 Faturamento Total</p><p class="stat-value" id="stat-fat" style="color:var(--primary)">R$ 0</p></div>
+                <div class="stat-card"><p class="stat-label">📈 Lucro Estimado</p><p class="stat-value" id="stat-luc" style="color:var(--success)">R$ 0</p></div>
+                <div class="stat-card"><p class="stat-label">🛒 Vendas Finalizadas</p><p class="stat-value" id="stat-qtd">0</p></div>
+                <div class="stat-card"><p class="stat-label">📦 Unid. em Estoque</p><p class="stat-value" id="stat-stk">0</p></div>
+            </div>
 
-    <div class="card">
-      <table>
-        <thead>
-          <tr>
-            <th>Móvel</th>
-            <th>Categoria</th>
-            <th>Qtd</th>
-            <th>Preço</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody id="lista-produtos">
-          </tbody>
-      </table>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem">
+                <div class="card" style="margin-bottom:0">
+                    <h3 style="font-size:1rem;font-weight:700;margin-bottom:1rem">🏆 Ranking de Vendas</h3>
+                    <div id="ranking-lista"></div>
+                </div>
+                <div class="card" style="margin-bottom:0">
+                    <h3 style="font-size:1rem;font-weight:700;margin-bottom:1rem">⚠ Estoque Baixo</h3>
+                    <div id="estoque-baixo-dash"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 style="font-size:1rem;font-weight:700;margin-bottom:1rem">📋 Histórico de Vendas Aprovadas</h3>
+                <div id="historico-vendas"></div>
+            </div>
+        </section>
+
+        <!-- ESTOQUE -->
+        <section id="tab-estoque" class="content" style="display:none">
+            <div class="page-header">
+                <h2>📦 Estoque</h2>
+                <button class="btn btn-primary" id="btn-novo-produto" style="display:none" onclick="abrirModalProduto()">+ Novo Móvel</button>
+            </div>
+            <div id="alertas-estoque"></div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Móvel / Especificação</th>
+                            <th>Disponível</th>
+                            <th id="th-custo" style="display:none">Custo</th>
+                            <th>Venda</th>
+                            <th id="th-margem" style="display:none">Margem</th>
+                            <th>Realizar Venda</th>
+                            <th id="th-acoes" style="display:none">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lista-corpo"></tbody>
+                </table>
+                <div id="estoque-empty" class="empty-state" style="display:none">
+                    <div class="empty-icon">📭</div>
+                    <p>Nenhum produto cadastrado ainda.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ALERTAS (admin) -->
+        <section id="tab-alertas" class="content" style="display:none">
+            <div class="page-header"><h2>🔔 Pedidos Pendentes de Aprovação</h2></div>
+            <div id="lista-pedidos-pendentes"></div>
+        </section>
+
+        <!-- MEUS PEDIDOS (vendedor) -->
+        <section id="tab-meus-pedidos" class="content" style="display:none">
+            <div class="page-header"><h2>📋 Meus Pedidos</h2></div>
+            <div id="lista-meus-pedidos"></div>
+        </section>
+    </main>
+</div>
+
+<!-- ═══════════════════ MODAL: PRODUTO ═══════════════════ -->
+<div id="modal-produto" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3 id="modal-prod-titulo">Cadastrar Móvel</h3>
+            <button class="close-btn" onclick="fecharModal('modal-produto')">✕</button>
+        </div>
+        <input type="hidden" id="p-id">
+        <label>Nome do Móvel *</label>
+        <input type="text" id="p-nome" placeholder="Ex: Guarda-Roupa Casal Premium">
+        <label>Descrição / Material</label>
+        <textarea id="p-desc" placeholder="Ex: MDF 100%, Cor Imbuia, 6 portas"></textarea>
+        <div class="row">
+            <div>
+                <label>Custo de Compra (R$) *</label>
+                <input type="number" id="p-custo" placeholder="0,00" min="0" step="0.01" oninput="atualizarMargem()">
+            </div>
+            <div>
+                <label>Preço de Venda (R$) *</label>
+                <input type="number" id="p-venda" placeholder="0,00" min="0" step="0.01" oninput="atualizarMargem()">
+            </div>
+        </div>
+        <div id="margem-preview" class="margem-box" style="display:none"></div>
+        <label>Quantidade em Estoque *</label>
+        <input type="number" id="p-qtd" placeholder="0" min="0">
+        <div class="row" style="margin-top:4px">
+            <button class="btn btn-success" style="justify-content:center" onclick="salvarProduto()">✔ Salvar</button>
+            <button class="btn btn-ghost" style="justify-content:center" onclick="fecharModal('modal-produto')">Cancelar</button>
+        </div>
     </div>
-  </main>
+</div>
+
+<!-- ═══════════════════ MODAL: CONFIRMAR VENDA ═══════════════════ -->
+<div id="modal-venda" class="modal-overlay">
+    <div class="modal-box" style="max-width:420px">
+        <div class="modal-header">
+            <h3>Confirmar Pedido de Venda</h3>
+            <button class="close-btn" onclick="fecharModal('modal-venda')">✕</button>
+        </div>
+        <div id="modal-venda-info"></div>
+        <div class="row" style="margin-top:1rem">
+            <button class="btn btn-success" style="justify-content:center" onclick="confirmarVenda()">Enviar para Aprovação</button>
+            <button class="btn btn-ghost" style="justify-content:center" onclick="fecharModal('modal-venda')">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════ MODAL: REPOR ESTOQUE ═══════════════════ -->
+<div id="modal-repor" class="modal-overlay">
+    <div class="modal-box" style="max-width:380px">
+        <div class="modal-header">
+            <h3>Repor Estoque</h3>
+            <button class="close-btn" onclick="fecharModal('modal-repor')">✕</button>
+        </div>
+        <input type="hidden" id="repor-id">
+        <p id="repor-nome" style="font-weight:700;margin-bottom:1rem;color:var(--text)"></p>
+        <label>Quantidade a adicionar</label>
+        <input type="number" id="repor-qtd" placeholder="0" min="1">
+        <div class="row" style="margin-top:4px">
+            <button class="btn btn-primary" style="justify-content:center" onclick="confirmarRepor()">+ Adicionar</button>
+            <button class="btn btn-ghost" style="justify-content:center" onclick="fecharModal('modal-repor')">Cancelar</button>
+        </div>
+    </div>
 </div>
 
 <script>
-  function renderEstoque() {
-    const lista = document.getElementById('lista-produtos');
-    lista.innerHTML = APP.produtos.map(p => `
-      <tr>
-        <td><strong>${p.nome}</strong></td>
-        <td>${p.categoria}</td>
-        <td>${p.qtd} un</td>
-        <td>R$ ${p.venda.toFixed(2)}</td>
-        <td><span class="badge-status status-disponivel">${p.status || 'Disponível'}</span></td>
-      </tr>
-    `).join('');
-  }
+/* ══════════════════════════════════════════════
+   BANCO DE DADOS — localStorage
+══════════════════════════════════════════════ */
+const DB_KEY = 'moveispro_v3';
 
-  function gerarCatalogoPDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    
-    // Header PDF Clean
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(22);
-    doc.setTextColor(45, 52, 70);
-    doc.text("MóveisPro", 14, 22);
-    
-    doc.setFontSize(10);
-    doc.setTextColor(150);
-    doc.text("CATÁLOGO DE PRODUTOS | " + new Date().toLocaleDateString(), 14, 28);
+function defaultDB() {
+    return {
+        estoque: [
+            {id: 1, nome: "Guarda-Roupa Casal Gold",    desc: "MDF 100%, Cor Imbuia, 6 portas",    custo: 850,  venda: 1950, qtd: 5},
+            {id: 2, nome: "Cama Box Queen Plush",        desc: "Molas Ensacadas, 158x198cm",         custo: 600,  venda: 1400, qtd: 8},
+            {id: 3, nome: "Sofá 3 Lugares Veludo",       desc: "Tecido veludo cinza, pés dourados",   custo: 1200, venda: 2800, qtd: 3},
+            {id: 4, nome: "Mesa de Jantar 6 Lugares",    desc: "Tampo de vidro temperado, base inox", custo: 750,  venda: 1800, qtd: 1},
+            {id: 5, nome: "Rack para TV 65\"",           desc: "MDF branco, 3 nichos, porta de vidro", custo: 420, venda: 980,  qtd: 6}
+        ],
+        pedidos: [],
+        vendas: []
+    };
+}
 
-    const rows = APP.produtos.map(p => [
-      p.nome, 
-      p.categoria, 
-      `R$ ${p.venda.toFixed(2)}`,
-      p.status || 'Em linha'
-    ]);
+function carregarDB() {
+    try { const s = localStorage.getItem(DB_KEY); if (s) return JSON.parse(s); } catch(e) {}
+    return defaultDB();
+}
+function salvarDB() {
+    localStorage.setItem(DB_KEY, JSON.stringify(DB));
+}
 
-    doc.autoTable({
-      startY: 35,
-      head: [['Produto', 'Categoria', 'Valor', 'Status']],
-      body: rows,
-      theme: 'striped',
-      headStyles: { fillColor: [201, 168, 76], textColor: 255 }, // Dourado no topo
-      styles: { font: "helvetica", fontSize: 10 }
+let DB = carregarDB();
+
+/* ══════════════════════════════════════════════
+   USUÁRIOS
+══════════════════════════════════════════════ */
+const USUARIOS = {
+    'admin': { senha: '123', nome: 'Administrador',  cargo: 'admin'    },
+    'vend1': { senha: '123', nome: 'Sandro Silva',   cargo: 'vendedor' },
+    'vend2': { senha: '123', nome: 'Marina Costa',   cargo: 'vendedor' },
+    'vend3': { senha: '123', nome: 'Ricardo Alves',  cargo: 'vendedor' }
+};
+
+let EU = null;         // usuário logado
+let vendaTemp = null;  // dados da venda a confirmar
+
+/* ══════════════════════════════════════════════
+   AUTH
+══════════════════════════════════════════════ */
+function login() {
+    const u = document.getElementById('input-user').value.trim().toLowerCase();
+    const p = document.getElementById('input-pass').value;
+    const erro = document.getElementById('login-erro');
+    const usr = USUARIOS[u];
+
+    if (!usr || usr.senha !== p) { erro.style.display = 'block'; return; }
+    erro.style.display = 'none';
+    EU = { login: u, ...usr };
+
+    document.getElementById('tela-login').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('nome-perfil').textContent = EU.nome + (EU.cargo === 'admin' ? ' · Admin' : ' · Vendedor');
+
+    configurarInterface();
+    renderizarTudo();
+}
+
+function logout() {
+    EU = null; vendaTemp = null;
+    document.getElementById('tela-login').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('input-user').value = '';
+    document.getElementById('input-pass').value = '';
+}
+
+/* ══════════════════════════════════════════════
+   INTERFACE — tabs e colunas por cargo
+══════════════════════════════════════════════ */
+function configurarInterface() {
+    const isAdmin = EU.cargo === 'admin';
+
+    // Colunas exclusivas admin
+    ['th-custo','th-margem','th-acoes'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = isAdmin ? '' : 'none';
+    });
+    const btnNovo = document.getElementById('btn-novo-produto');
+    if (btnNovo) btnNovo.style.display = isAdmin ? '' : 'none';
+
+    // Tabs
+    const nav = document.getElementById('nav-tabs');
+    if (isAdmin) {
+        nav.innerHTML = `
+            <button class="tab-btn active" onclick="switchTab('dash',this)">📊 Dashboard</button>
+            <button class="tab-btn" onclick="switchTab('estoque',this)">📦 Estoque</button>
+            <button class="tab-btn" id="tab-alertas-btn" onclick="switchTab('alertas',this)">
+                🔔 Alertas<span id="count-alertas" class="badge-count" style="display:none">0</span>
+            </button>`;
+        switchTab('dash', nav.querySelector('.tab-btn'));
+    } else {
+        nav.innerHTML = `
+            <button class="tab-btn active" onclick="switchTab('estoque',this)">📦 Estoque</button>
+            <button class="tab-btn" onclick="switchTab('meus-pedidos',this)">📋 Meus Pedidos</button>`;
+        switchTab('estoque', nav.querySelector('.tab-btn'));
+    }
+}
+
+function switchTab(id, btn) {
+    document.querySelectorAll('.content').forEach(c => c.style.display = 'none');
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    const sec = document.getElementById('tab-' + id);
+    if (sec) sec.style.display = 'block';
+    if (btn) btn.classList.add('active');
+}
+
+/* ══════════════════════════════════════════════
+   MODAIS
+══════════════════════════════════════════════ */
+function abrirModal(id)  { document.getElementById(id).classList.add('open'); }
+function fecharModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// Fechar ao clicar fora
+document.querySelectorAll('.modal-overlay').forEach(m => {
+    m.addEventListener('click', e => { if (e.target === m) fecharModal(m.id); });
+});
+
+/* ══════════════════════════════════════════════
+   PRODUTOS — CRUD (Admin)
+══════════════════════════════════════════════ */
+function abrirModalProduto(id = null) {
+    document.getElementById('p-id').value    = id || '';
+    document.getElementById('p-nome').value  = '';
+    document.getElementById('p-desc').value  = '';
+    document.getElementById('p-custo').value = '';
+    document.getElementById('p-venda').value = '';
+    document.getElementById('p-qtd').value   = '';
+    document.getElementById('margem-preview').style.display = 'none';
+    document.getElementById('modal-prod-titulo').textContent = id ? '✏️ Editar Móvel' : '📦 Cadastrar Novo Móvel';
+
+    if (id) {
+        const p = DB.estoque.find(x => x.id === id);
+        if (p) {
+            document.getElementById('p-nome').value  = p.nome;
+            document.getElementById('p-desc').value  = p.desc;
+            document.getElementById('p-custo').value = p.custo;
+            document.getElementById('p-venda').value = p.venda;
+            document.getElementById('p-qtd').value   = p.qtd;
+            atualizarMargem();
+        }
+    }
+    abrirModal('modal-produto');
+}
+
+function atualizarMargem() {
+    const c = parseFloat(document.getElementById('p-custo').value);
+    const v = parseFloat(document.getElementById('p-venda').value);
+    const box = document.getElementById('margem-preview');
+    if (c > 0 && v > 0) {
+        const lucro = v - c;
+        const pct = ((lucro / v) * 100).toFixed(1);
+        const cor = lucro < 0 ? 'var(--danger)' : 'var(--success)';
+        box.style.display = 'block';
+        box.innerHTML = `Lucro unitário: <strong style="color:${cor}">R$ ${brl(lucro)}</strong> &nbsp;|&nbsp; Margem: <strong style="color:${cor}">${pct}%</strong>`;
+    } else {
+        box.style.display = 'none';
+    }
+}
+
+function salvarProduto() {
+    const id    = document.getElementById('p-id').value;
+    const nome  = document.getElementById('p-nome').value.trim();
+    const desc  = document.getElementById('p-desc').value.trim();
+    const custo = parseFloat(document.getElementById('p-custo').value);
+    const venda = parseFloat(document.getElementById('p-venda').value);
+    const qtd   = parseInt(document.getElementById('p-qtd').value) || 0;
+
+    if (!nome)          return alert('Informe o nome do móvel.');
+    if (isNaN(custo) || custo < 0) return alert('Informe um custo válido.');
+    if (isNaN(venda) || venda < 0) return alert('Informe um preço de venda válido.');
+    if (venda < custo && !confirm(`O preço de venda (R$ ${brl(venda)}) é menor que o custo (R$ ${brl(custo)}). Salvar mesmo assim?`)) return;
+
+    if (id) {
+        const p = DB.estoque.find(x => x.id === parseInt(id));
+        if (p) Object.assign(p, { nome, desc, custo, venda, qtd });
+    } else {
+        DB.estoque.push({ id: Date.now(), nome, desc, custo, venda, qtd });
+    }
+    salvarDB();
+    fecharModal('modal-produto');
+    renderizarTudo();
+}
+
+function excluirProduto(id) {
+    const p = DB.estoque.find(x => x.id === id);
+    if (!p || !confirm(`Excluir "${p.nome}" permanentemente?`)) return;
+    DB.estoque = DB.estoque.filter(x => x.id !== id);
+    salvarDB();
+    renderizarTudo();
+}
+
+function abrirReporEstoque(id) {
+    const p = DB.estoque.find(x => x.id === id);
+    document.getElementById('repor-id').value = id;
+    document.getElementById('repor-nome').textContent = p.nome + ' — Estoque atual: ' + p.qtd + ' un';
+    document.getElementById('repor-qtd').value = '';
+    abrirModal('modal-repor');
+}
+
+function confirmarRepor() {
+    const id  = parseInt(document.getElementById('repor-id').value);
+    const qtd = parseInt(document.getElementById('repor-qtd').value);
+    if (!qtd || qtd <= 0) return alert('Informe uma quantidade válida.');
+    const p = DB.estoque.find(x => x.id === id);
+    if (p) { p.qtd += qtd; salvarDB(); fecharModal('modal-repor'); renderizarTudo(); }
+}
+
+/* ══════════════════════════════════════════════
+   VENDAS — fluxo vendedor → admin
+══════════════════════════════════════════════ */
+function abrirModalVenda(id) {
+    const qtdEl = document.getElementById(`qtd-${id}`);
+    const qtd   = parseInt(qtdEl.value);
+    const p     = DB.estoque.find(x => x.id === id);
+
+    if (!qtd || qtd <= 0)  return alert('Informe uma quantidade válida.');
+    if (qtd > p.qtd)       return alert(`Estoque insuficiente. Disponível: ${p.qtd} unidade(s).`);
+
+    vendaTemp = { prodId: id, qtd };
+    const total = p.venda * qtd;
+
+    document.getElementById('modal-venda-info').innerHTML = `
+        <div class="info-box">
+            <p style="font-weight:700;font-size:1rem;margin-bottom:8px">${p.nome}</p>
+            <p style="color:#777;font-size:0.85rem;margin-bottom:12px">${p.desc}</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div><p style="font-size:0.75rem;color:#aaa;text-transform:uppercase">Quantidade</p><p style="font-weight:700;font-size:1.1rem">${qtd} un</p></div>
+                <div><p style="font-size:0.75rem;color:#aaa;text-transform:uppercase">Total da Venda</p><p style="font-weight:700;font-size:1.1rem;color:var(--success)">R$ ${brl(total)}</p></div>
+            </div>
+        </div>
+        <p style="font-size:0.82rem;color:#aaa;text-align:center">O pedido será enviado ao administrador para aprovação antes de baixar o estoque.</p>`;
+
+    abrirModal('modal-venda');
+}
+
+function confirmarVenda() {
+    if (!vendaTemp) return;
+    const { prodId, qtd } = vendaTemp;
+    const p = DB.estoque.find(x => x.id === prodId);
+
+    if (qtd > p.qtd) {
+        alert('Estoque insuficiente no momento. Pedido cancelado.');
+        fecharModal('modal-venda');
+        vendaTemp = null;
+        return;
+    }
+
+    DB.pedidos.push({
+        idPedido: Date.now(),
+        prodId:   p.id,
+        nome:     p.nome,
+        qtd,
+        precoUnit: p.venda,
+        custoUnit: p.custo,
+        total:     p.venda * qtd,
+        vendedor:  EU.nome,
+        loginVend: EU.login,
+        dataCriado: new Date().toISOString()
     });
 
-    doc.save('Catalogo_MoveisPro_Clean.pdf');
-  }
-</script>
+    salvarDB();
+    fecharModal('modal-venda');
+    const el = document.getElementById(`qtd-${prodId}`);
+    if (el) el.value = '';
+    vendaTemp = null;
+    alert('✅ Pedido enviado! Aguarde a aprovação do Administrador.');
+    renderizarTudo();
+}
 
+function aprovarPedido(idPedido) {
+    const idx = DB.pedidos.findIndex(x => x.idPedido === idPedido);
+    if (idx < 0) return;
+    const ped = DB.pedidos[idx];
+    const p   = DB.estoque.find(x => x.id === ped.prodId);
+
+    if (!p) return alert('Produto não encontrado no estoque.');
+    if (p.qtd < ped.qtd) return alert(`Estoque insuficiente! Disponível: ${p.qtd}, Pedido: ${ped.qtd}`);
+
+    p.qtd -= ped.qtd;
+    DB.vendas.push({ ...ped, dataAprovado: new Date().toISOString() });
+    DB.pedidos.splice(idx, 1);
+    salvarDB();
+    renderizarTudo();
+}
+
+function rejeitarPedido(idPedido) {
+    if (!confirm('Rejeitar e excluir este pedido?')) return;
+    DB.pedidos = DB.pedidos.filter(x => x.idPedido !== idPedido);
+    salvarDB();
+    renderizarTudo();
+}
+
+/* ══════════════════════════════════════════════
+   RENDER
+══════════════════════════════════════════════ */
+function renderizarTudo() {
+    renderEstoque();
+    renderAlertas();
+    if (EU.cargo === 'admin') renderDashboard();
+    else renderMeusPedidos();
+}
+
+function renderEstoque() {
+    const isAdmin = EU.cargo === 'admin';
+    const corpo = document.getElementById('lista-corpo');
+    const empty = document.getElementById('estoque-empty');
+    const alertBox = document.getElementById('alertas-estoque');
+
+    // Alertas de estoque baixo
+    const baixo = DB.estoque.filter(p => p.qtd <= 2);
+    alertBox.innerHTML = baixo.map(p =>
+        `<div class="alerta-bar">⚠️ <strong>${p.nome}</strong> — ${p.qtd === 0 ? 'Estoque zerado!' : `Apenas ${p.qtd} unidade(s) restante(s).`}${isAdmin ? ` <button class="btn btn-ghost btn-icon" style="margin-left:auto" onclick="abrirReporEstoque(${p.id})">+ Repor</button>` : ''}</div>`
+    ).join('');
+
+    if (DB.estoque.length === 0) {
+        corpo.innerHTML = '';
+        empty.style.display = 'block';
+        return;
+    }
+    empty.style.display = 'none';
+
+    corpo.innerHTML = DB.estoque.map(p => {
+        const badgeCls = p.qtd === 0 ? 'badge-bad' : p.qtd <= 2 ? 'badge-warn' : 'badge-ok';
+        const badgeTxt = p.qtd === 0 ? 'Esgotado' : `${p.qtd} un`;
+        const margem   = p.venda > 0 ? ((p.venda - p.custo) / p.venda * 100).toFixed(0) + '%' : '-';
+
+        return `<tr>
+            <td>
+                <strong>${p.nome}</strong>
+                ${p.desc ? `<br><small style="color:#bbb">${p.desc}</small>` : ''}
+            </td>
+            <td><span class="badge ${badgeCls}">${badgeTxt}</span></td>
+            ${isAdmin ? `<td style="color:var(--danger);font-weight:600">R$ ${brl(p.custo)}</td>` : ''}
+            <td style="color:var(--success);font-weight:700">R$ ${brl(p.venda)}</td>
+            ${isAdmin ? `<td style="color:#888">${margem}</td>` : ''}
+            <td>
+                ${p.qtd > 0
+                    ? `<div style="display:flex;gap:6px;align-items:center">
+                           <input type="number" id="qtd-${p.id}" placeholder="Qtd" min="1" max="${p.qtd}" style="margin:0;width:72px;padding:7px;font-size:0.88rem">
+                           <button class="btn btn-success btn-icon" onclick="abrirModalVenda(${p.id})">Vender</button>
+                       </div>`
+                    : `<span style="color:#ccc;font-size:0.82rem">Sem estoque</span>`}
+            </td>
+            ${isAdmin ? `<td>
+                <div style="display:flex;gap:5px">
+                    <button class="btn btn-ghost btn-icon" title="Editar" onclick="abrirModalProduto(${p.id})">✏️</button>
+                    <button class="btn btn-ghost btn-icon" title="Repor estoque" onclick="abrirReporEstoque(${p.id})">📦</button>
+                    <button class="btn btn-danger btn-icon" title="Excluir" onclick="excluirProduto(${p.id})">🗑️</button>
+                </div>
+            </td>` : ''}
+        </tr>`;
+    }).join('');
+}
+
+function renderAlertas() {
+    const cont  = document.getElementById('lista-pedidos-pendentes');
+    const badge = document.getElementById('count-alertas');
+    if (!cont) return;
+
+    if (DB.pedidos.length > 0) {
+        if (badge) { badge.textContent = DB.pedidos.length; badge.style.display = 'inline'; }
+        cont.innerHTML = DB.pedidos.map(p => {
+            const lucro = p.total - (p.custoUnit * p.qtd);
+            return `<div class="card pedido-card" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:1rem">
+                <div>
+                    <p style="font-weight:700;margin-bottom:4px">${p.qtd}× ${p.nome}</p>
+                    <p style="font-size:0.83rem;color:#aaa;margin-bottom:6px">Solicitado por <strong>${p.vendedor}</strong> em ${fmt(p.dataCriado)}</p>
+                    <p style="font-size:0.88rem">Total: <strong style="color:var(--success)">R$ ${brl(p.total)}</strong> &nbsp;|&nbsp; Lucro: <strong style="color:var(--success)">R$ ${brl(lucro)}</strong></p>
+                </div>
+                <div style="display:flex;gap:8px">
+                    <button class="btn btn-success" onclick="aprovarPedido(${p.idPedido})">✔ Aprovar</button>
+                    <button class="btn btn-danger"  onclick="rejeitarPedido(${p.idPedido})">✖ Rejeitar</button>
+                </div>
+            </div>`;
+        }).join('');
+    } else {
+        if (badge) badge.style.display = 'none';
+        cont.innerHTML = `<div class="empty-state"><div class="empty-icon">✅</div><p>Nenhum pedido pendente.</p></div>`;
+    }
+}
+
+function renderDashboard() {
+    const v = DB.vendas;
+    const fat  = v.reduce((s, x) => s + x.total, 0);
+    const luc  = v.reduce((s, x) => s + (x.total - x.custoUnit * x.qtd), 0);
+    const stk  = DB.estoque.reduce((s, p) => s + p.qtd, 0);
+
+    document.getElementById('stat-fat').textContent = 'R$ ' + brl(fat);
+    document.getElementById('stat-luc').textContent = 'R$ ' + brl(luc);
+    document.getElementById('stat-qtd').textContent = v.length;
+    document.getElementById('stat-stk').textContent = stk;
+
+    // Ranking
+    const rankMap = {};
+    v.forEach(x => { rankMap[x.vendedor] = (rankMap[x.vendedor] || 0) + x.total; });
+    const sorted = Object.entries(rankMap).sort((a,b) => b[1] - a[1]);
+    const medals = ['🥇','🥈','🥉'];
+    document.getElementById('ranking-lista').innerHTML = sorted.length > 0
+        ? sorted.map((r,i) => `
+            <div class="rank-row">
+                <span style="font-size:1.1rem">${medals[i] || '#' + (i+1)}</span>
+                <span style="flex:1;margin:0 12px">${r[0]}</span>
+                <strong style="color:var(--success)">R$ ${brl(r[1])}</strong>
+            </div>`).join('')
+        : '<div class="empty-state" style="padding:1.5rem"><p>Nenhuma venda finalizada.</p></div>';
+
+    // Estoque baixo no dash
+    const baixo = DB.estoque.filter(p => p.qtd <= 3);
+    document.getElementById('estoque-baixo-dash').innerHTML = baixo.length > 0
+        ? baixo.map(p => `
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 4px;border-bottom:1px solid var(--border)">
+                <span style="font-size:0.9rem">${p.nome}</span>
+                <span class="badge ${p.qtd === 0 ? 'badge-bad' : 'badge-warn'}">${p.qtd === 0 ? 'Zerado' : p.qtd + ' un'}</span>
+            </div>`).join('')
+        : '<div class="empty-state" style="padding:1.5rem;color:#aaa"><p>Estoque em dia ✓</p></div>';
+
+    // Histórico
+    const hist = [...v].reverse();
+    document.getElementById('historico-vendas').innerHTML = hist.length > 0
+        ? `<div style="overflow-x:auto"><table>
+            <thead><tr><th>Data</th><th>Vendedor</th><th>Produto</th><th>Qtd</th><th>Total</th><th>Lucro</th></tr></thead>
+            <tbody>${hist.map(x => `
+                <tr>
+                    <td style="font-size:0.82rem;color:#aaa;white-space:nowrap">${fmt(x.dataAprovado)}</td>
+                    <td>${x.vendedor}</td>
+                    <td>${x.nome}</td>
+                    <td style="text-align:center">${x.qtd}</td>
+                    <td style="color:var(--success);font-weight:700">R$ ${brl(x.total)}</td>
+                    <td style="color:var(--success)">R$ ${brl(x.total - x.custoUnit * x.qtd)}</td>
+                </tr>`).join('')}
+            </tbody></table></div>`
+        : '<div class="empty-state"><p>Nenhuma venda finalizada ainda.</p></div>';
+}
+
+function renderMeusPedidos() {
+    const cont = document.getElementById('lista-meus-pedidos');
+    if (!cont) return;
+
+    const pendentes   = DB.pedidos.filter(x => x.loginVend === EU.login);
+    const finalizadas = [...DB.vendas].filter(x => x.loginVend === EU.login).reverse();
+
+    let html = '';
+
+    if (pendentes.length > 0) {
+        html += '<h3 style="margin-bottom:1rem">⏳ Aguardando Aprovação</h3>';
+        html += pendentes.map(p => `
+            <div class="card pedido-card pendente" style="margin-bottom:1rem">
+                <p style="font-weight:700">${p.qtd}× ${p.nome}</p>
+                <p style="font-size:0.88rem;color:var(--success);margin-top:4px">R$ ${brl(p.total)}</p>
+                <p style="font-size:0.82rem;color:#aaa;margin-top:4px">Enviado em ${fmt(p.dataCriado)}</p>
+                <span class="badge badge-warn" style="margin-top:6px;display:inline-block">Pendente</span>
+            </div>`).join('');
+    }
+
+    if (finalizadas.length > 0) {
+        const totalMeu = finalizadas.reduce((s,x) => s + x.total, 0);
+        html += `<div class="divider"></div><h3 style="margin-bottom:1rem">✅ Vendas Aprovadas — <span style="color:var(--success)">R$ ${brl(totalMeu)}</span></h3>`;
+        html += finalizadas.map(v => `
+            <div class="card pedido-card aprovado" style="margin-bottom:1rem">
+                <p style="font-weight:700">${v.qtd}× ${v.nome}</p>
+                <p style="font-size:0.88rem;color:var(--success);margin-top:4px">R$ ${brl(v.total)}</p>
+                <p style="font-size:0.82rem;color:#aaa;margin-top:4px">Aprovado em ${fmt(v.dataAprovado)}</p>
+                <span class="badge badge-ok" style="margin-top:6px;display:inline-block">Aprovada</span>
+            </div>`).join('');
+    }
+
+    if (!pendentes.length && !finalizadas.length) {
+        html = `<div class="empty-state"><div class="empty-icon">📋</div><p>Nenhum pedido registrado ainda.</p></div>`;
+    }
+
+    cont.innerHTML = html;
+}
+
+/* ══════════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════════ */
+function brl(n) {
+    return (isNaN(n) ? 0 : n).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function fmt(iso) {
+    return iso ? new Date(iso).toLocaleString('pt-BR') : '-';
+}
+</script>
 </body>
 </html>
