@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MóveisPro — Gestão Clean</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+  import { getFirestore, collection, onSnapshot, query, orderBy, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+  // Configuração (Substitua pelos seus dados do console.firebase.google.com)
+  const firebaseConfig = {
+    apiKey: "SUA_API_KEY",
+    authDomain: "SEU_PROJETO.firebaseapp.com",
+    projectId: "SEU_PROJETO_ID",
+    storageBucket: "SEU_PROJETO.appspot.com",
+    messagingSenderId: "SEU_SENDER_ID",
+    appId: "SEU_APP_ID"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  window.APP = { auth, db, user: null, perfil: null, produtos: [] };
+
+  // Monitor de Autenticação
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      const snap = await getDoc(doc(db, 'usuarios', user.uid));
+      APP.user = user;
+      APP.perfil = snap.exists() ? snap.data() : { nome: user.email, perfil: 'vendedor' };
+      document.getElementById('tela-login').style.display = 'none';
+      document.getElementById('tela-app').style.display = 'block';
+      carregarDados();
+    } else {
+      document.getElementById('tela-login').style.display = 'flex';
+      document.getElementById('tela-app').style.display = 'none';
+    }
+  });
+
+  window.fazerLogin = () => {
+    const email = document.getElementById('l-email').value;
+    const senha = document.getElementById('l-senha').value;
+    signInWithEmailAndPassword(auth, email, senha).catch(err => alert("Erro: " + err.message));
+  };
+
+  window.fazerLogout = () => signOut(auth);
+
+  function carregarDados() {
+    const q = query(collection(db, 'produtos'), orderBy('nome'));
+    onSnapshot(q, snap => {
+      APP.produtos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderEstoque();
+    });
+  }
+</script>
+
+<style>
+:root {
+  --primary: #C9A84C; /* Dourado */
+  --bg: #F8F9FA;    /* Cinza quase branco */
+  --card: #FFFFFF;  /* Branco puro */
+  --text: #2D3436;  /* Grafite */
+  --text-light: #636E72;
+  --border: #EDF2F7;
+  --radius: 12px;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  margin: 0;
+}
+
+/* UI CLEAN */
+.topbar {
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky; top: 0; z-index: 100;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-primary:hover { opacity: 0.9; }
+
+/* LOGIN CLEAN */
+#tela-login {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #FFF;
+}
+
+.login-box {
+  width: 100%;
+  max-width: 380px;
+  padding: 2.5rem;
+  text-align: center;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+}
+
+input {
+  width: 100%;
+  padding: 0.8rem;
+  margin: 0.5rem 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #F1F3F5;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  text-align: left;
+  padding: 1rem;
+  color: var(--text-light);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+}
+
+td {
+  padding: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.badge-status {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+.status-disponivel { background: #E3FCEF; color: #006644; }
+</style>
+</head>
+<body>
+
+<div id="tela-login">
+  <div class="login-box">
+    <h1 style="font-family:'Cormorant Garamond'">Móveis<span style="color:var(--primary)">Pro</span></h1>
+    <p style="color:var(--text-light)">Acesse sua conta</p>
+    <input type="email" id="l-email" placeholder="E-mail">
+    <input type="password" id="l-senha" placeholder="Senha">
+    <button class="btn-primary" style="width:100%; margin-top:1rem" onclick="fazerLogin()">Entrar</button>
+  </div>
+</div>
+
+<div id="tela-app" style="display:none">
+  <nav class="topbar">
+    <div style="font-weight:bold; font-size:1.2rem">Móveis<span style="color:var(--primary)">Pro</span></div>
+    <button onclick="fazerLogout()" style="background:none; border:none; color:var(--text-light); cursor:pointer">Sair</button>
+  </nav>
+
+  <main style="padding: 2rem; max-width: 1200px; margin: 0 auto;">
+    <div style="display:flex; justify-content:space-between; margin-bottom:2rem">
+      <h2>Estoque Central</h2>
+      <button class="btn-primary" onclick="gerarCatalogoPDF()">Gerar Catálogo PDF Clean</button>
+    </div>
+
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>Móvel</th>
+            <th>Categoria</th>
+            <th>Qtd</th>
+            <th>Preço</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="lista-produtos">
+          </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<script>
+  function renderEstoque() {
+    const lista = document.getElementById('lista-produtos');
+    lista.innerHTML = APP.produtos.map(p => `
+      <tr>
+        <td><strong>${p.nome}</strong></td>
+        <td>${p.categoria}</td>
+        <td>${p.qtd} un</td>
+        <td>R$ ${p.venda.toFixed(2)}</td>
+        <td><span class="badge-status status-disponivel">${p.status || 'Disponível'}</span></td>
+      </tr>
+    `).join('');
+  }
+
+  function gerarCatalogoPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    // Header PDF Clean
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(22);
+    doc.setTextColor(45, 52, 70);
+    doc.text("MóveisPro", 14, 22);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(150);
+    doc.text("CATÁLOGO DE PRODUTOS | " + new Date().toLocaleDateString(), 14, 28);
+
+    const rows = APP.produtos.map(p => [
+      p.nome, 
+      p.categoria, 
+      `R$ ${p.venda.toFixed(2)}`,
+      p.status || 'Em linha'
+    ]);
+
+    doc.autoTable({
+      startY: 35,
+      head: [['Produto', 'Categoria', 'Valor', 'Status']],
+      body: rows,
+      theme: 'striped',
+      headStyles: { fillColor: [201, 168, 76], textColor: 255 }, // Dourado no topo
+      styles: { font: "helvetica", fontSize: 10 }
+    });
+
+    doc.save('Catalogo_MoveisPro_Clean.pdf');
+  }
+</script>
+
+</body>
+</html>
