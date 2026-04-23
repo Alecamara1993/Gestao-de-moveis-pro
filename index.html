@@ -1,806 +1,1821 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-br" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MóveisPro — Sistema Integrado</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #C9A84C;
-            --bg: #F4F6F9;
-            --card: #FFFFFF;
-            --text: #2D3436;
-            --border: #E8ECF0;
-            --success: #27ae60;
-            --danger: #d63031;
-            --warn: #e67e22;
-            --muted: #7f8c8d;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MóveisPro — Gestão</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════
+   TEMAS — basta trocar data-theme no <html>
+══════════════════════════════════════════ */
+:root {
+  --gold:        #C9A84C;
+  --gold-light:  #E8C97A;
+  --gold-dim:    rgba(201,168,76,0.13);
+  --border-gold: rgba(201,168,76,0.32);
+  --success:     #22C55E;
+  --success-dim: rgba(34,197,94,0.13);
+  --danger:      #EF4444;
+  --danger-dim:  rgba(239,68,68,0.13);
+  --warn:        #F59E0B;
+  --warn-dim:    rgba(245,158,11,0.13);
+  --radius:      12px;
+  --sidebar-w:   242px;
+}
 
-        /* ── LOGIN ── */
-        #tela-login {
-            min-height: 100vh; display: flex; align-items: center; justify-content: center;
-            background: linear-gradient(135deg, #f4f6f9 0%, #e8ecf0 100%);
-        }
-        .login-box {
-            background: white; border-radius: 16px; padding: 2.5rem 2rem;
-            width: 380px; max-width: 95vw; border: 1px solid var(--border);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.08);
-        }
-        .logo { font-family: 'Cormorant Garamond', serif; font-size: 2.8rem; font-weight: 700; line-height: 1; margin-bottom: 0.3rem; }
-        .logo span { color: var(--primary); }
-        .login-hint { font-size: 0.75rem; color: #bbb; margin-top: 1.2rem; text-align: center; }
+/* ── MODO ESCURO ── */
+[data-theme="dark"] {
+  --bg:          #0E1118;
+  --surface:     #171B26;
+  --surface2:    #1E2336;
+  --border:      rgba(255,255,255,0.07);
+  --text:        #EEF0F8;
+  --text-muted:  #6B7280;
+  --text-dim:    #9CA3AF;
+  --shadow:      0 4px 28px rgba(0,0,0,0.45);
+  --row-hover:   rgba(255,255,255,0.025);
+  --scroll:      rgba(255,255,255,0.1);
+}
 
-        /* ── LAYOUT ── */
-        #app { display: none; }
-        .navbar {
-            background: white; padding: 0.9rem 5%; display: flex;
-            justify-content: space-between; align-items: center;
-            border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 200;
-        }
-        .nav-logo { font-family: 'Cormorant Garamond', serif; font-weight: 700; font-size: 1.6rem; }
-        .nav-logo span { color: var(--primary); }
-        .nav-right { display: flex; align-items: center; gap: 16px; }
-        .perfil-badge {
-            font-size: 0.85rem; font-weight: 500; color: #555;
-            background: #f4f6f9; border-radius: 20px; padding: 5px 14px; border: 1px solid var(--border);
-        }
+/* ── MODO CLARO ── */
+[data-theme="light"] {
+  --bg:          #F2F4F9;
+  --surface:     #FFFFFF;
+  --surface2:    #EEF0F7;
+  --border:      rgba(0,0,0,0.085);
+  --text:        #191C2B;
+  --text-muted:  #64748B;
+  --text-dim:    #475569;
+  --shadow:      0 4px 20px rgba(0,0,0,0.08);
+  --row-hover:   rgba(0,0,0,0.018);
+  --scroll:      rgba(0,0,0,0.13);
+}
 
-        .tabs {
-            background: white; padding: 0 5%; display: flex; gap: 4px;
-            border-bottom: 1px solid var(--border); position: sticky; top: 57px; z-index: 199; overflow-x: auto;
-        }
-        .tab-btn {
-            padding: 14px 18px; border: none; background: none; cursor: pointer;
-            font-weight: 600; font-size: 0.9rem; color: #aaa;
-            border-bottom: 3px solid transparent; transition: all 0.2s; white-space: nowrap;
-        }
-        .tab-btn:hover { color: var(--primary); }
-        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  background: var(--bg); color: var(--text);
+  font-family: 'Outfit', sans-serif; font-size: 15px;
+  overflow: hidden;
+  transition: background .3s, color .3s;
+}
 
-        .container { padding: 2rem 5%; max-width: 1280px; margin: 0 auto; }
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--scroll); border-radius: 9px; }
 
-        /* ── CARDS ── */
-        .card {
-            background: white; border-radius: 12px; padding: 1.5rem;
-            border: 1px solid var(--border); margin-bottom: 1.5rem;
-        }
-        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.2rem; margin-bottom: 2rem; }
-        .stat-card { background: white; border-radius: 12px; padding: 1.4rem; border: 1px solid var(--border); }
-        .stat-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); }
-        .stat-value { font-size: 1.8rem; font-weight: 700; margin-top: 6px; }
+/* ══════════════════════════════════════════
+   LOADING
+══════════════════════════════════════════ */
+#tela-loading {
+  position: fixed; inset: 0; background: var(--bg);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 16px; z-index: 9999;
+}
+.spinner {
+  width: 38px; height: 38px;
+  border: 3px solid var(--border);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin .75s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-logo {
+  font-family: 'Playfair Display', serif; font-size: 1.8rem;
+  font-weight: 800; color: var(--text);
+}
+.loading-logo span { color: var(--gold); }
+.loading-msg { font-size: .8rem; color: var(--text-muted); }
 
-        /* ── FORM ── */
-        label { display: block; font-size: 0.82rem; font-weight: 600; color: #666; margin-bottom: 4px; }
-        input[type=text], input[type=number], input[type=password], textarea, select {
-            width: 100%; padding: 10px 12px; border: 1px solid var(--border);
-            border-radius: 8px; font-family: inherit; font-size: 0.95rem;
-            outline: none; transition: border 0.2s; background: white; color: var(--text);
-            margin-bottom: 14px;
-        }
-        input:focus, textarea:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(201,168,76,0.12); }
-        textarea { resize: vertical; min-height: 72px; }
+/* ══════════════════════════════════════════
+   LOGIN
+══════════════════════════════════════════ */
+#tela-login {
+  position: fixed; inset: 0; display: none;
+  align-items: center; justify-content: center;
+  background: var(--bg);
+  background-image: radial-gradient(ellipse 60% 50% at 50% -5%,
+    rgba(201,168,76,.09) 0%, transparent 65%);
+  z-index: 9000;
+}
+.login-wrap {
+  display: flex; flex-direction: column; align-items: center;
+  width: 390px; max-width: 95vw;
+}
+.login-logo {
+  font-family: 'Playfair Display', serif; font-size: 3rem;
+  font-weight: 800; letter-spacing: -1px; margin-bottom: .25rem;
+}
+.login-logo span { color: var(--gold); }
+.login-tag { color: var(--text-muted); font-size: .86rem; margin-bottom: 2.2rem; }
+.login-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-top: 2px solid var(--gold);
+  border-radius: 20px; padding: 2.2rem;
+  width: 100%; box-shadow: var(--shadow);
+  transition: background .3s, border-color .3s;
+}
+.login-card label {
+  display: block; font-size: .73rem; font-weight: 700;
+  color: var(--text-muted); text-transform: uppercase;
+  letter-spacing: 1px; margin-bottom: 5px;
+}
+.login-card input {
+  width: 100%; padding: 11px 13px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 10px; color: var(--text);
+  font-family: 'Outfit', sans-serif; font-size: .93rem;
+  outline: none; transition: border .2s, box-shadow .2s; margin-bottom: 1.1rem;
+}
+.login-card input:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px var(--gold-dim);
+}
+.btn-login {
+  width: 100%; padding: 13px; background: var(--gold);
+  border: none; border-radius: 10px; color: #0F1117;
+  font-family: 'Outfit', sans-serif; font-size: .98rem; font-weight: 700;
+  cursor: pointer; transition: all .2s; margin-top: .2rem;
+}
+.btn-login:hover   { background: var(--gold-light); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(201,168,76,.28); }
+.btn-login:disabled{ opacity: .6; cursor: not-allowed; transform: none; }
+.login-erro { color: var(--danger); font-size: .82rem; margin-bottom: 10px; display: none; text-align: center; }
 
-        /* ── BUTTONS ── */
-        .btn {
-            padding: 9px 18px; border: none; border-radius: 8px; font-weight: 700;
-            font-size: 0.88rem; cursor: pointer; transition: all 0.18s;
-            display: inline-flex; align-items: center; gap: 7px; line-height: 1;
-        }
-        .btn:hover { opacity: 0.88; transform: translateY(-1px); }
-        .btn:active { transform: translateY(0); }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-success { background: var(--success); color: white; }
-        .btn-danger  { background: var(--danger);  color: white; }
-        .btn-ghost   { background: #f1f3f5; color: var(--text); }
-        .btn-icon    { padding: 7px 10px; font-size: 0.8rem; border-radius: 6px; }
+/* ══════════════════════════════════════════
+   LAYOUT
+══════════════════════════════════════════ */
+#app { display: none; height: 100vh; overflow: hidden; }
+.layout { display: flex; height: 100vh; }
 
-        /* ── TABLE ── */
-        .table-wrap { border-radius: 12px; overflow: hidden; border: 1px solid var(--border); background: white; margin-bottom: 1.5rem; }
-        table { width: 100%; border-collapse: collapse; }
-        thead { background: #fafafa; }
-        th { text-align: left; padding: 11px 14px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); border-bottom: 1px solid var(--border); font-weight: 700; }
-        td { padding: 12px 14px; border-top: 1px solid var(--border); font-size: 0.93rem; vertical-align: middle; }
-        tr:hover td { background: #fdfdf9; }
+/* ── Sidebar ── */
+.sidebar {
+  width: var(--sidebar-w); flex-shrink: 0;
+  background: var(--surface); border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; overflow: hidden; position: relative;
+  transition: background .3s, border-color .3s;
+}
+.sidebar::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+.sidebar-logo {
+  padding: 1.35rem 1.5rem 1rem;
+  border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+.logo-text { font-family: 'Playfair Display', serif; font-size: 1.48rem; font-weight: 800; color: var(--text); letter-spacing: -.5px; }
+.logo-text span { color: var(--gold); }
+.logo-sub { font-size: .66rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin-top: 1px; }
 
-        /* ── BADGES ── */
-        .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; }
-        .badge-ok   { background: #d4edda; color: #155724; }
-        .badge-warn { background: #fff3cd; color: #856404; }
-        .badge-bad  { background: #f8d7da; color: #721c24; }
-        .badge-count { background: var(--danger); color: white; font-size: 0.7rem; font-weight: 700; padding: 2px 7px; border-radius: 12px; margin-left: 6px; }
+.sidebar-nav { flex: 1; padding: .75rem; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
+.nav-sec { font-size: .63rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); padding: 8px 8px 4px; margin-top: 4px; }
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: 9px; cursor: pointer;
+  font-size: .87rem; font-weight: 500; color: var(--text-dim);
+  transition: all .15s; border: none; background: none;
+  width: 100%; text-align: left; position: relative;
+}
+.nav-item:hover  { background: var(--surface2); color: var(--text); }
+.nav-item.active { background: var(--gold-dim);  color: var(--gold); }
+.nav-icon { font-size: .98rem; flex-shrink: 0; width: 18px; text-align: center; }
+.nav-badge {
+  margin-left: auto; background: var(--danger); color: #fff;
+  font-size: .63rem; font-weight: 700; padding: 2px 7px;
+  border-radius: 20px; display: none;
+}
 
-        /* ── MODAL ── */
-        .modal-overlay {
-            display: none; position: fixed; inset: 0;
-            background: rgba(0,0,0,0.45); align-items: center; justify-content: center;
-            z-index: 1000; backdrop-filter: blur(3px);
-        }
-        .modal-overlay.open { display: flex; }
-        .modal-box {
-            background: white; border-radius: 16px; padding: 2rem; width: 480px;
-            max-width: 95vw; max-height: 92vh; overflow-y: auto;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-        }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-        .modal-header h3 { font-size: 1.15rem; font-weight: 700; }
-        .close-btn { background: none; border: none; font-size: 1.3rem; cursor: pointer; color: #aaa; padding: 2px 6px; border-radius: 4px; }
-        .close-btn:hover { background: #f1f1f1; color: var(--text); }
+/* ── Tema toggle ── */
+.theme-toggle-wrap { padding: 0 .75rem .6rem; flex-shrink: 0; }
+.theme-btn {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 8px 12px; cursor: pointer;
+  font-family: 'Outfit', sans-serif; font-size: .81rem; font-weight: 600;
+  color: var(--text-dim); transition: all .2s;
+}
+.theme-btn:hover { border-color: var(--gold); color: var(--text); }
+.pill {
+  width: 36px; height: 20px; border-radius: 20px;
+  background: var(--surface); border: 1.5px solid var(--border);
+  position: relative; flex-shrink: 0; transition: background .3s, border-color .3s;
+}
+[data-theme="light"] .pill { background: var(--gold); border-color: var(--gold); }
+.knob {
+  position: absolute; top: 2px; left: 2px;
+  width: 13px; height: 13px; border-radius: 50%;
+  background: var(--text-muted); transition: transform .3s, background .3s;
+}
+[data-theme="light"] .knob { transform: translateX(16px); background: #fff; }
 
-        /* ── MISC ── */
-        .row { display: flex; gap: 12px; }
-        .row > * { flex: 1; }
-        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 10px; }
-        .page-header h2 { font-size: 1.35rem; font-weight: 700; }
-        .empty-state { text-align: center; padding: 3rem; color: #bbb; }
-        .empty-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
-        .alerta-bar { background: #fff8e1; border: 1px solid #ffe082; border-radius: 8px; padding: 10px 16px; margin-bottom: 10px; font-size: 0.88rem; display: flex; align-items: center; gap: 8px; }
-        .pedido-card { border-left: 4px solid var(--primary); border-radius: 0 10px 10px 0; }
-        .pedido-card.aprovado { border-left-color: var(--success); }
-        .pedido-card.pendente { border-left-color: var(--warn); }
-        .info-box { background: #f8f9fa; border-radius: 8px; padding: 14px; margin-bottom: 12px; }
-        .margem-box { background: #f0faf4; border: 1px solid #c3e6cb; border-radius: 8px; padding: 10px 14px; font-size: 0.85rem; margin-bottom: 14px; }
-        .rank-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 4px; border-bottom: 1px solid var(--border); }
-        .rank-row:last-child { border-bottom: none; }
-        .divider { height: 1px; background: var(--border); margin: 1.2rem 0; }
-    </style>
+.sidebar-footer { padding: .75rem; border-top: 1px solid var(--border); flex-shrink: 0; }
+.user-card {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; border-radius: 9px; background: var(--surface2);
+}
+.user-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--gold-dim); border: 1px solid var(--border-gold);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .79rem; font-weight: 700; color: var(--gold); flex-shrink: 0;
+}
+.user-info { flex: 1; min-width: 0; }
+.user-name { font-size: .81rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.user-role { font-size: .69rem; color: var(--text-muted); }
+.btn-logout {
+  background: none; border: none; cursor: pointer; color: var(--text-muted);
+  padding: 4px 6px; border-radius: 6px; font-size: .95rem; transition: color .15s; flex-shrink: 0;
+}
+.btn-logout:hover { color: var(--danger); }
+
+/* ── Main ── */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+.topbar {
+  padding: 1rem 1.8rem; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--surface); flex-shrink: 0; transition: background .3s;
+}
+.topbar-title    { font-size: 1.1rem; font-weight: 700; }
+.topbar-subtitle { font-size: .77rem; color: var(--text-muted); margin-top: 1px; }
+.topbar-actions  { display: flex; align-items: center; gap: 10px; }
+.content-area    { flex: 1; overflow-y: auto; padding: 1.8rem; }
+
+/* ══════════════════════════════════════════
+   COMPONENTES
+══════════════════════════════════════════ */
+.btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 16px; border-radius: 9px; border: none; cursor: pointer;
+  font-family: 'Outfit', sans-serif; font-size: .85rem; font-weight: 600;
+  transition: all .18s; line-height: 1; white-space: nowrap;
+}
+.btn:hover  { transform: translateY(-1px); }
+.btn:active { transform: translateY(0); }
+.btn-primary { background: var(--gold); color: #0F1117; }
+.btn-primary:hover { background: var(--gold-light); box-shadow: 0 6px 20px rgba(201,168,76,.28); }
+.btn-success { background: var(--success); color: #fff; }
+.btn-success:hover { filter: brightness(1.08); }
+.btn-danger  { background: var(--danger);  color: #fff; }
+.btn-danger:hover  { filter: brightness(1.08); }
+.btn-ghost   { background: var(--surface2); color: var(--text-dim); border: 1px solid var(--border); }
+.btn-ghost:hover   { background: var(--surface); color: var(--text); }
+.btn-sm   { padding: 6px 12px; font-size: .78rem; }
+.btn-icon { padding: 7px 9px; border-radius: 8px; }
+
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.4rem; margin-bottom: 1.2rem; transition: background .3s; }
+.card-title { font-size: .87rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
+
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+.stat-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 1.3rem 1.4rem; position: relative; overflow: hidden;
+  transition: border-color .2s, background .3s;
+}
+.stat-card:hover { border-color: var(--border-gold); }
+.stat-card::after { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:var(--acc,var(--gold)); opacity:.7; }
+.stat-label { font-size: .7rem; text-transform: uppercase; letter-spacing: .8px; color: var(--text-muted); margin-bottom: 8px; }
+.stat-value { font-size: 1.75rem; font-weight: 700; line-height: 1; }
+.stat-ico   { position: absolute; top: 1rem; right: 1.2rem; font-size: 1.3rem; opacity: .22; }
+
+.table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 1.2rem; transition: background .3s; }
+table { width: 100%; border-collapse: collapse; }
+thead { background: var(--surface2); }
+th { text-align: left; padding: 11px 16px; font-size: .68rem; text-transform: uppercase; letter-spacing: .8px; color: var(--text-muted); border-bottom: 1px solid var(--border); font-weight: 700; }
+td { padding: 12px 16px; border-top: 1px solid var(--border); font-size: .87rem; vertical-align: middle; }
+tr:hover td { background: var(--row-hover); }
+
+.badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: .69rem; font-weight: 700; gap: 4px; }
+.badge::before { content:'●'; font-size:.48rem; }
+.badge-ok   { background: var(--success-dim); color: var(--success); }
+.badge-warn { background: var(--warn-dim);    color: var(--warn); }
+.badge-bad  { background: var(--danger-dim);  color: var(--danger); }
+
+label { display: block; font-size: .73rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 5px; }
+input[type=text],input[type=number],input[type=password],input[type=email],textarea,select {
+  width: 100%; padding: 10px 13px; background: var(--surface2);
+  border: 1px solid var(--border); border-radius: 9px;
+  font-family: 'Outfit', sans-serif; font-size: .91rem;
+  color: var(--text); outline: none; transition: border .2s, box-shadow .2s, background .3s;
+  margin-bottom: 1.1rem;
+}
+input:focus,textarea:focus,select:focus { border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-dim); }
+select option { background: var(--surface2); color: var(--text); }
+textarea { resize: vertical; min-height: 68px; }
+
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.68); align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(8px); }
+.modal-overlay.open { display: flex; animation: fIn .15s ease; }
+@keyframes fIn { from{opacity:0} to{opacity:1} }
+.modal-box {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 18px; padding: 2rem; width: 480px;
+  max-width: 95vw; max-height: 92vh; overflow-y: auto;
+  box-shadow: 0 30px 80px rgba(0,0,0,.55);
+  animation: sUp .2s ease; transition: background .3s;
+}
+@keyframes sUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+.modal-header h3 { font-size: 1.04rem; font-weight: 700; }
+.close-btn { background: var(--surface2); border: 1px solid var(--border); font-size: .98rem; cursor: pointer; color: var(--text-muted); padding: 5px 9px; border-radius: 8px; transition: all .15s; }
+.close-btn:hover { background: var(--danger-dim); color: var(--danger); border-color: var(--danger); }
+
+.row { display: flex; gap: 12px; }
+.row > * { flex: 1; }
+.empty-state { text-align: center; padding: 3.5rem 2rem; color: var(--text-muted); }
+.empty-icon  { font-size: 2.6rem; margin-bottom: .8rem; opacity: .4; }
+.empty-state p { font-size: .88rem; }
+.alerta-bar { background: var(--warn-dim); border: 1px solid rgba(245,158,11,.22); border-radius: 9px; padding: 10px 14px; margin-bottom: 8px; font-size: .84rem; display: flex; align-items: center; gap: 8px; color: var(--warn); }
+.info-box   { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 1.2rem; margin-bottom: 1rem; transition: background .3s; }
+.margem-box { background: var(--success-dim); border: 1px solid rgba(34,197,94,.22); border-radius: 9px; padding: 10px 14px; font-size: .82rem; margin-bottom: 1.1rem; color: var(--success); }
+.margem-box.neg { background: var(--danger-dim); border-color: rgba(239,68,68,.22); color: var(--danger); }
+.rank-row { display: flex; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--border); gap: 10px; }
+.rank-row:last-child { border-bottom: none; }
+.divider { height: 1px; background: var(--border); margin: 1.2rem 0; }
+.pedido-card { border-left: 3px solid var(--gold); background: var(--surface); border-radius: 0 12px 12px 0; padding: 1.2rem; margin-bottom: 1rem; border-top: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); transition: background .3s; }
+.pedido-card.aprovado { border-left-color: var(--success); }
+.pedido-card.pendente  { border-left-color: var(--warn); }
+.search-wrap { position: relative; }
+.search-wrap input { padding-left: 36px; margin-bottom: 0; }
+.search-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: .88rem; pointer-events: none; }
+
+/* Firebase badge */
+.fb-badge { display: inline-flex; align-items: center; gap: 5px; font-size: .72rem; font-weight: 700; color: var(--text-muted); }
+.fb-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+
+/* Toast */
+.toast-container { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+.toast {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 11px 17px; min-width: 230px;
+  box-shadow: var(--shadow); font-size: .86rem; font-weight: 500;
+  display: flex; align-items: center; gap: 10px;
+  animation: tIn .25s ease; transition: opacity .3s; color: var(--text);
+}
+.toast.out { opacity: 0; }
+@keyframes tIn { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
+.toast.success { border-left: 3px solid var(--success); }
+.toast.error   { border-left: 3px solid var(--danger); }
+.toast.info    { border-left: 3px solid var(--gold); }
+
+@media (max-width:720px) {
+  .sidebar { width: 52px; }
+  .logo-text,.logo-sub,.nav-item span:not(.nav-badge),.user-info,.nav-sec,.theme-btn span:not(.pill) { display:none; }
+  .nav-item,.theme-btn { justify-content: center; padding: 10px; }
+  .user-card { justify-content: center; }
+}
+
+/* ── RESERVA de estoque ── */
+.badge-reserva {
+  background: rgba(129,140,248,.15);
+  color: #818CF8;
+  font-size: .66rem; font-weight: 700; padding: 2px 8px;
+  border-radius: 20px; display: inline-flex; align-items: center; gap: 3px;
+}
+.badge-reserva::before { content:'🔒'; font-size:.62rem; }
+.stk-disponivel {
+  display: flex; flex-direction: column; gap: 3px;
+}
+.stk-disponivel .qtd-real { font-size:.72rem; color:var(--text-muted); }
+
+/* ── Vendedores modal ── */
+.vendedor-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 4px; border-bottom: 1px solid var(--border); gap: 10px;
+}
+.vendedor-row:last-child { border-bottom: none; }
+.vendedor-avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--gold-dim); border: 1px solid var(--border-gold);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .78rem; font-weight: 700; color: var(--gold); flex-shrink: 0;
+}
+.tab-nav {
+  display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 1.2rem;
+}
+.tab-btn {
+  padding: 8px 16px; font-size: .82rem; font-weight: 600; border: none;
+  background: none; cursor: pointer; color: var(--text-muted); border-bottom: 2px solid transparent;
+  margin-bottom: -1px; transition: all .15s; font-family: 'Outfit', sans-serif;
+}
+.tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
+.tab-btn:hover  { color: var(--text); }
+
+/* ── Lembrar login ── */
+.lembrar-row {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 1rem; margin-top: -.4rem;
+}
+.lembrar-row input[type=checkbox] {
+  width: 16px; height: 16px; margin: 0; padding: 0;
+  accent-color: var(--gold); cursor: pointer;
+}
+.lembrar-row label {
+  font-size: .8rem; color: var(--text-muted); text-transform: none;
+  letter-spacing: 0; font-weight: 500; cursor: pointer; margin: 0;
+}
+
+/* ── Filtro de data no histórico ── */
+.filtro-data-bar {
+  display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 12px 14px; margin-bottom: 1rem;
+}
+.filtro-data-bar label {
+  font-size: .7rem; text-transform: uppercase; letter-spacing: .8px;
+  color: var(--text-muted); font-weight: 700; margin: 0; white-space: nowrap;
+}
+.filtro-data-bar input[type=date],
+.filtro-data-bar select {
+  padding: 7px 10px; font-size: .82rem; margin: 0; width: auto; min-width: 120px;
+}
+.filtro-grupo { display: flex; align-items: center; gap: 6px; }
+
+/* ── Troca de senha ── */
+.senha-info { font-size: .79rem; color: var(--text-muted); margin-bottom: 1rem; }
+</style>
 </head>
 <body>
 
-<!-- ═══════════════════ LOGIN ═══════════════════ -->
-<div id="tela-login">
-    <div class="login-box">
-        <div style="text-align:center; margin-bottom:1.8rem">
-            <div class="logo">Móveis<span>Pro</span></div>
-            <p style="color:#aaa; font-size:0.9rem; margin-top:4px">Sistema de Gestão</p>
-        </div>
-        <label>Usuário</label>
-        <input type="text" id="input-user" placeholder="admin, vend1, vend2 ou vend3" onkeydown="if(event.key==='Enter') login()">
-        <label>Senha</label>
-        <input type="password" id="input-pass" placeholder="senha" onkeydown="if(event.key==='Enter') login()">
-        <p id="login-erro" style="color:var(--danger);font-size:0.88rem;margin-bottom:12px;display:none">⚠ Usuário ou senha inválidos.</p>
-        <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;font-size:1rem" onclick="login()">Entrar</button>
-        <p class="login-hint">admin/123 &nbsp;·&nbsp; vend1/123 &nbsp;·&nbsp; vend2/123 &nbsp;·&nbsp; vend3/123</p>
-    </div>
+<!-- ══ LOADING ══ -->
+<div id="tela-loading">
+  <div class="loading-logo">Móveis<span>Pro</span></div>
+  <div class="spinner"></div>
+  <div class="loading-msg" id="loading-msg">Conectando ao Firebase…</div>
 </div>
 
-<!-- ═══════════════════ APP ═══════════════════ -->
+<!-- ══ LOGIN ══ -->
+<div id="tela-login" style="display:none;flex-direction:column;align-items:center;justify-content:center;">
+  <div class="login-wrap">
+    <div class="login-logo">Móveis<span>Pro</span></div>
+    <p class="login-tag">Sistema de Gestão de Móveis</p>
+    <div class="login-card">
+      <div class="fb-badge" style="margin-bottom:1.2rem">
+        <span class="fb-dot"></span> Conectado ao Firebase
+      </div>
+      <label>E-mail</label>
+      <input type="email" id="inp-email" placeholder="seu@email.com" onkeydown="if(event.key==='Enter')fazerLogin()">
+      <label>Senha</label>
+      <input type="password" id="inp-senha" placeholder="••••••" onkeydown="if(event.key==='Enter')fazerLogin()">
+      <div class="lembrar-row">
+        <input type="checkbox" id="lembrar-me">
+        <label for="lembrar-me">Lembrar meu login</label>
+      </div>
+      <p id="login-erro" class="login-erro">⚠ E-mail ou senha incorretos.</p>
+      <button class="btn-login" id="btn-login" onclick="fazerLogin()">Entrar →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ APP ══ -->
 <div id="app">
-    <nav class="navbar">
-        <div class="nav-logo">Móveis<span>Pro</span></div>
-        <div class="nav-right">
-            <span class="perfil-badge" id="nome-perfil"></span>
-            <button class="btn btn-ghost" onclick="logout()">Sair</button>
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-text">Móveis<span>Pro</span></div>
+      <div class="logo-sub">Gestão em tempo real</div>
+    </div>
+    <nav class="sidebar-nav" id="sidebar-nav"></nav>
+
+    <!-- Toggle tema -->
+    <div class="theme-toggle-wrap">
+      <button class="theme-btn" onclick="alternarTema()" id="theme-btn">
+        <span id="theme-label">🌙 Modo Escuro</span>
+        <div class="pill"><div class="knob"></div></div>
+      </button>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar" id="user-av">?</div>
+        <div class="user-info">
+          <div class="user-name" id="user-nm">—</div>
+          <div class="user-role" id="user-rl">—</div>
         </div>
-    </nav>
-    <div class="tabs" id="nav-tabs"></div>
+        <button class="btn-logout" onclick="fazerLogout()" title="Sair">↩</button>
+      </div>
+    </div>
+  </aside>
 
-    <main class="container">
-        <!-- DASHBOARD (admin) -->
-        <section id="tab-dash" class="content" style="display:none">
-            <div class="stat-grid">
-                <div class="stat-card"><p class="stat-label">💰 Faturamento Total</p><p class="stat-value" id="stat-fat" style="color:var(--primary)">R$ 0</p></div>
-                <div class="stat-card"><p class="stat-label">📈 Lucro Estimado</p><p class="stat-value" id="stat-luc" style="color:var(--success)">R$ 0</p></div>
-                <div class="stat-card"><p class="stat-label">🛒 Vendas Finalizadas</p><p class="stat-value" id="stat-qtd">0</p></div>
-                <div class="stat-card"><p class="stat-label">📦 Unid. em Estoque</p><p class="stat-value" id="stat-stk">0</p></div>
-            </div>
-
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem">
-                <div class="card" style="margin-bottom:0">
-                    <h3 style="font-size:1rem;font-weight:700;margin-bottom:1rem">🏆 Ranking de Vendas</h3>
-                    <div id="ranking-lista"></div>
-                </div>
-                <div class="card" style="margin-bottom:0">
-                    <h3 style="font-size:1rem;font-weight:700;margin-bottom:1rem">⚠ Estoque Baixo</h3>
-                    <div id="estoque-baixo-dash"></div>
-                </div>
-            </div>
-
-            <div class="card">
-                <h3 style="font-size:1rem;font-weight:700;margin-bottom:1rem">📋 Histórico de Vendas Aprovadas</h3>
-                <div id="historico-vendas"></div>
-            </div>
-        </section>
-
-        <!-- ESTOQUE -->
-        <section id="tab-estoque" class="content" style="display:none">
-            <div class="page-header">
-                <h2>📦 Estoque</h2>
-                <button class="btn btn-primary" id="btn-novo-produto" style="display:none" onclick="abrirModalProduto()">+ Novo Móvel</button>
-            </div>
-            <div id="alertas-estoque"></div>
-            <div class="table-wrap">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Móvel / Especificação</th>
-                            <th>Disponível</th>
-                            <th id="th-custo" style="display:none">Custo</th>
-                            <th>Venda</th>
-                            <th id="th-margem" style="display:none">Margem</th>
-                            <th>Realizar Venda</th>
-                            <th id="th-acoes" style="display:none">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody id="lista-corpo"></tbody>
-                </table>
-                <div id="estoque-empty" class="empty-state" style="display:none">
-                    <div class="empty-icon">📭</div>
-                    <p>Nenhum produto cadastrado ainda.</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- ALERTAS (admin) -->
-        <section id="tab-alertas" class="content" style="display:none">
-            <div class="page-header"><h2>🔔 Pedidos Pendentes de Aprovação</h2></div>
-            <div id="lista-pedidos-pendentes"></div>
-        </section>
-
-        <!-- MEUS PEDIDOS (vendedor) -->
-        <section id="tab-meus-pedidos" class="content" style="display:none">
-            <div class="page-header"><h2>📋 Meus Pedidos</h2></div>
-            <div id="lista-meus-pedidos"></div>
-        </section>
-    </main>
+  <div class="main">
+    <header class="topbar">
+      <div>
+        <div class="topbar-title" id="tp-titulo">Dashboard</div>
+        <div class="topbar-subtitle" id="tp-sub">Visão geral do negócio</div>
+      </div>
+      <div class="topbar-actions" id="tp-actions"></div>
+    </header>
+    <div class="content-area" id="content-area"></div>
+  </div>
+</div>
 </div>
 
-<!-- ═══════════════════ MODAL: PRODUTO ═══════════════════ -->
+<!-- ══ MODAL: PRODUTO ══ -->
 <div id="modal-produto" class="modal-overlay">
-    <div class="modal-box">
-        <div class="modal-header">
-            <h3 id="modal-prod-titulo">Cadastrar Móvel</h3>
-            <button class="close-btn" onclick="fecharModal('modal-produto')">✕</button>
-        </div>
-        <input type="hidden" id="p-id">
-        <label>Nome do Móvel *</label>
-        <input type="text" id="p-nome" placeholder="Ex: Guarda-Roupa Casal Premium">
-        <label>Descrição / Material</label>
-        <textarea id="p-desc" placeholder="Ex: MDF 100%, Cor Imbuia, 6 portas"></textarea>
-        <div class="row">
-            <div>
-                <label>Custo de Compra (R$) *</label>
-                <input type="number" id="p-custo" placeholder="0,00" min="0" step="0.01" oninput="atualizarMargem()">
-            </div>
-            <div>
-                <label>Preço de Venda (R$) *</label>
-                <input type="number" id="p-venda" placeholder="0,00" min="0" step="0.01" oninput="atualizarMargem()">
-            </div>
-        </div>
-        <div id="margem-preview" class="margem-box" style="display:none"></div>
-        <label>Quantidade em Estoque *</label>
-        <input type="number" id="p-qtd" placeholder="0" min="0">
-        <div class="row" style="margin-top:4px">
-            <button class="btn btn-success" style="justify-content:center" onclick="salvarProduto()">✔ Salvar</button>
-            <button class="btn btn-ghost" style="justify-content:center" onclick="fecharModal('modal-produto')">Cancelar</button>
-        </div>
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="mp-titulo">Cadastrar Móvel</h3>
+      <button class="close-btn" onclick="fm('modal-produto')">✕</button>
     </div>
+    <input type="hidden" id="p-id">
+    <label>Nome do Móvel *</label>
+    <input type="text" id="p-nome" placeholder="Ex: Guarda-Roupa Casal Gold">
+    <label>Descrição / Material</label>
+    <textarea id="p-desc" placeholder="Ex: MDF 100%, Cor Imbuia, 6 portas"></textarea>
+    <div class="row">
+      <div><label>Custo (R$) *</label><input type="number" id="p-custo" placeholder="0,00" min="0" step="0.01" oninput="calcMargem()"></div>
+      <div><label>Preço Venda (R$) *</label><input type="number" id="p-venda" placeholder="0,00" min="0" step="0.01" oninput="calcMargem()"></div>
+    </div>
+    <div id="margem-preview" class="margem-box" style="display:none"></div>
+    <label>Qtd em Estoque *</label>
+    <input type="number" id="p-qtd" placeholder="0" min="0">
+    <div class="row" style="margin-top:4px">
+      <button class="btn btn-primary" style="justify-content:center;flex:1" onclick="salvarProduto()">✔ Salvar</button>
+      <button class="btn btn-ghost"   style="justify-content:center"        onclick="fm('modal-produto')">Cancelar</button>
+    </div>
+  </div>
 </div>
 
-<!-- ═══════════════════ MODAL: CONFIRMAR VENDA ═══════════════════ -->
+<!-- ══ MODAL: VENDA ══ -->
 <div id="modal-venda" class="modal-overlay">
-    <div class="modal-box" style="max-width:420px">
-        <div class="modal-header">
-            <h3>Confirmar Pedido de Venda</h3>
-            <button class="close-btn" onclick="fecharModal('modal-venda')">✕</button>
-        </div>
-        <div id="modal-venda-info"></div>
-        <div class="row" style="margin-top:1rem">
-            <button class="btn btn-success" style="justify-content:center" onclick="confirmarVenda()">Enviar para Aprovação</button>
-            <button class="btn btn-ghost" style="justify-content:center" onclick="fecharModal('modal-venda')">Cancelar</button>
-        </div>
+  <div class="modal-box" style="max-width:420px">
+    <div class="modal-header">
+      <h3>Confirmar Pedido</h3>
+      <button class="close-btn" onclick="fm('modal-venda')">✕</button>
     </div>
+    <div id="mv-info"></div>
+    <div class="row" style="margin-top:1rem">
+      <button class="btn btn-success" style="justify-content:center;flex:1" onclick="confirmarVenda()">Enviar para Aprovação →</button>
+      <button class="btn btn-ghost"   style="justify-content:center"        onclick="fm('modal-venda')">Cancelar</button>
+    </div>
+  </div>
 </div>
 
-<!-- ═══════════════════ MODAL: REPOR ESTOQUE ═══════════════════ -->
+<!-- ══ MODAL: VENDEDORES ══ -->
+<div id="modal-vendedores" class="modal-overlay">
+  <div class="modal-box" style="width:520px">
+    <div class="modal-header">
+      <h3>👥 Gerenciar Usuários</h3>
+      <button class="close-btn" onclick="fm('modal-vendedores')">✕</button>
+    </div>
+    <div class="tab-nav">
+      <button class="tab-btn active" id="tab-lista-btn" onclick="tabVendedor('lista')">Usuários Cadastrados</button>
+      <button class="tab-btn" id="tab-novo-btn" onclick="tabVendedor('novo')">+ Criar Novo</button>
+    </div>
+    <!-- Tab: Lista -->
+    <div id="tab-lista">
+      <div id="lista-vendedores"><div class="empty-state"><div class="spinner" style="margin:0 auto"></div></div></div>
+    </div>
+    <!-- Tab: Criar -->
+    <div id="tab-novo" style="display:none">
+      <label>Nome Completo *</label>
+      <input type="text" id="nv-nome" placeholder="Ex: João da Silva">
+      <label>E-mail *</label>
+      <input type="email" id="nv-email" placeholder="vendedor@email.com">
+      <label>Senha Inicial *</label>
+      <input type="password" id="nv-senha" placeholder="Mín. 6 caracteres">
+      <label>Tipo de Acesso *</label>
+      <select id="nv-cargo" style="margin-bottom:1.1rem">
+        <option value="vendedor">👤 Vendedor</option>
+        <option value="admin">⭐ Administrador</option>
+      </select>
+      <p id="nv-erro" style="color:var(--danger);font-size:.82rem;margin-bottom:.8rem;display:none"></p>
+      <div class="row" style="margin-top:4px">
+        <button class="btn btn-primary" style="justify-content:center;flex:1" onclick="criarUsuario()">✔ Criar Usuário</button>
+        <button class="btn btn-ghost"   style="justify-content:center" onclick="tabVendedor('lista')">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: REPOR ══ -->
 <div id="modal-repor" class="modal-overlay">
-    <div class="modal-box" style="max-width:380px">
-        <div class="modal-header">
-            <h3>Repor Estoque</h3>
-            <button class="close-btn" onclick="fecharModal('modal-repor')">✕</button>
-        </div>
-        <input type="hidden" id="repor-id">
-        <p id="repor-nome" style="font-weight:700;margin-bottom:1rem;color:var(--text)"></p>
-        <label>Quantidade a adicionar</label>
-        <input type="number" id="repor-qtd" placeholder="0" min="1">
-        <div class="row" style="margin-top:4px">
-            <button class="btn btn-primary" style="justify-content:center" onclick="confirmarRepor()">+ Adicionar</button>
-            <button class="btn btn-ghost" style="justify-content:center" onclick="fecharModal('modal-repor')">Cancelar</button>
-        </div>
+  <div class="modal-box" style="max-width:380px">
+    <div class="modal-header">
+      <h3>📦 Repor Estoque</h3>
+      <button class="close-btn" onclick="fm('modal-repor')">✕</button>
     </div>
+    <input type="hidden" id="repor-id">
+    <p id="repor-nome" style="font-weight:700;margin-bottom:1rem;font-size:.92rem"></p>
+    <label>Quantidade a adicionar</label>
+    <input type="number" id="repor-qtd" placeholder="0" min="1">
+    <div class="row" style="margin-top:4px">
+      <button class="btn btn-primary" style="justify-content:center;flex:1" onclick="confirmarRepor()">+ Adicionar</button>
+      <button class="btn btn-ghost"   style="justify-content:center"        onclick="fm('modal-repor')">Cancelar</button>
+    </div>
+  </div>
 </div>
 
-<script>
-/* ══════════════════════════════════════════════
-   BANCO DE DADOS — localStorage
-══════════════════════════════════════════════ */
-const DB_KEY = 'moveispro_v3';
+<!-- ══ MODAL: TROCAR SENHA ══ -->
+<div id="modal-senha" class="modal-overlay">
+  <div class="modal-box" style="max-width:420px">
+    <div class="modal-header">
+      <h3>🔑 Trocar Senha</h3>
+      <button class="close-btn" onclick="fm('modal-senha')">✕</button>
+    </div>
+    <p class="senha-info" id="senha-info-txt">Informe a nova senha para o usuário selecionado.</p>
+    <input type="hidden" id="senha-uid">
+    <label>Nova Senha *</label>
+    <input type="password" id="nova-senha" placeholder="Mín. 6 caracteres">
+    <label>Confirmar Nova Senha *</label>
+    <input type="password" id="conf-senha" placeholder="Repita a senha">
+    <p id="senha-erro" style="color:var(--danger);font-size:.82rem;margin-bottom:.8rem;display:none"></p>
+    <div class="row" style="margin-top:4px">
+      <button class="btn btn-primary" style="justify-content:center;flex:1" onclick="salvarNovaSenha()">✔ Salvar Senha</button>
+      <button class="btn btn-ghost" style="justify-content:center" onclick="fm('modal-senha')">Cancelar</button>
+    </div>
+  </div>
+</div>
 
-function defaultDB() {
-    return {
-        estoque: [
-            {id: 1, nome: "Guarda-Roupa Casal Gold",    desc: "MDF 100%, Cor Imbuia, 6 portas",    custo: 850,  venda: 1950, qtd: 5},
-            {id: 2, nome: "Cama Box Queen Plush",        desc: "Molas Ensacadas, 158x198cm",         custo: 600,  venda: 1400, qtd: 8},
-            {id: 3, nome: "Sofá 3 Lugares Veludo",       desc: "Tecido veludo cinza, pés dourados",   custo: 1200, venda: 2800, qtd: 3},
-            {id: 4, nome: "Mesa de Jantar 6 Lugares",    desc: "Tampo de vidro temperado, base inox", custo: 750,  venda: 1800, qtd: 1},
-            {id: 5, nome: "Rack para TV 65\"",           desc: "MDF branco, 3 nichos, porta de vidro", custo: 420, venda: 980,  qtd: 6}
-        ],
-        pedidos: [],
-        vendas: []
-    };
-}
+<!-- ══ MODAL: EDITAR VENDA ══ -->
+<div id="modal-editar-venda" class="modal-overlay">
+  <div class="modal-box" style="max-width:420px">
+    <div class="modal-header">
+      <h3>✏️ Editar Valor da Venda</h3>
+      <button class="close-btn" onclick="fm('modal-editar-venda')">✕</button>
+    </div>
+    <input type="hidden" id="ev-id">
+    <p id="ev-info" style="font-weight:700;margin-bottom:6px;font-size:.9rem"></p>
+    <p id="ev-preco-orig" style="font-size:.78rem;color:var(--text-muted);margin-bottom:1rem"></p>
+    <label>Novo Total da Venda (R$) *</label>
+    <input type="number" id="ev-total" placeholder="0,00" min="0.01" step="0.01">
+    <p id="ev-erro" style="color:var(--danger);font-size:.82rem;margin-bottom:.8rem;display:none"></p>
+    <div class="alerta-bar" style="margin-bottom:1rem">⚠️ Use esta função apenas para corrigir vendas realizadas com desconto não autorizado.</div>
+    <div class="row" style="margin-top:4px">
+      <button class="btn btn-primary" style="justify-content:center;flex:1" onclick="salvarEdicaoVenda()">✔ Salvar Alteração</button>
+      <button class="btn btn-ghost" style="justify-content:center" onclick="fm('modal-editar-venda')">Cancelar</button>
+    </div>
+  </div>
+</div>
 
-function carregarDB() {
-    try { const s = localStorage.getItem(DB_KEY); if (s) return JSON.parse(s); } catch(e) {}
-    return defaultDB();
-}
-function salvarDB() {
-    localStorage.setItem(DB_KEY, JSON.stringify(DB));
-}
+<div class="toast-container" id="toast-container"></div>
 
-let DB = carregarDB();
+<!-- ══════════════════════════════════════════════════════════════
+     FIREBASE SDK  (modular, via CDN)
+══════════════════════════════════════════════════════════════ -->
+<script type="module">
+/* ─────────────────────────────────────────────────────────────
+   🔥 CONFIGURAÇÃO DO FIREBASE
+   ─ Substitua os valores abaixo pelos do SEU projeto ─
+   Console: https://console.firebase.google.com
+   Projeto → ⚙ Config → Seus apps → SDK de configuração
+───────────────────────────────────────────────────────────── */
+import { initializeApp }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged,
+  createUserWithEmailAndPassword, updatePassword, browserLocalPersistence,
+  browserSessionPersistence, setPersistence
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {
+  getFirestore, doc, setDoc, onSnapshot, collection, getDocs, deleteDoc, getDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-/* ══════════════════════════════════════════════
-   USUÁRIOS
-══════════════════════════════════════════════ */
-const USUARIOS = {
-    'admin': { senha: '123', nome: 'Administrador',  cargo: 'admin'    },
-    'vend1': { senha: '123', nome: 'Sandro Silva',   cargo: 'vendedor' },
-    'vend2': { senha: '123', nome: 'Marina Costa',   cargo: 'vendedor' },
-    'vend3': { senha: '123', nome: 'Ricardo Alves',  cargo: 'vendedor' }
+/* ════════════════════════════════════════
+   ▼▼▼  COLE AQUI SUA CONFIGURAÇÃO  ▼▼▼
+════════════════════════════════════════ */
+const firebaseConfig = {
+  apiKey: "AIzaSyA0ro3PmXbOYFu91PkELqMhppOqaXFuSp0",
+  authDomain: "sena-gestao-de-estoque.firebaseapp.com",
+  projectId: "sena-gestao-de-estoque",
+  storageBucket: "sena-gestao-de-estoque.firebasestorage.app",
+  messagingSenderId: "989804219329",
+  appId: "1:989804219329:web:45e2f2cb15e48aa47ebd40"
+};
+/* ════════════════════════════════════════
+   ▲▲▲  FIM DA CONFIGURAÇÃO  ▲▲▲
+════════════════════════════════════════ */
+
+/*
+  ─ ESTRUTURA NO FIRESTORE ─────────────────────────────────
+  Coleção: "empresa"  (ou o nome que preferir)
+    Documento: "estoque"  → { items: [ {id, nome, desc, custo, venda, qtd}, … ] }
+    Documento: "pedidos"  → { items: [ {idPedido, …}, … ] }
+    Documento: "vendas"   → { items: [ {idPedido, …, dataAprovado}, … ] }
+
+  Coleção: "usuarios"
+    Documento: <uid do Firebase Auth>  → { nome, cargo }
+    Ex: { nome: "Sandro Silva", cargo: "vendedor" }
+        { nome: "Administrador", cargo: "admin"   }
+
+  ─ REGRAS FIRESTORE (para teste) ─────────────────────────
+  rules_version = '2';
+  service cloud.firestore {
+    match /databases/{database}/documents {
+      match /{document=**} {
+        allow read, write: if request.auth != null;
+      }
+    }
+  }
+
+  ─ CRIAR USUÁRIOS ────────────────────────────────────────
+  Firebase Console → Authentication → Adicionar usuário
+  (e-mail + senha).  Depois crie o doc em /usuarios/{uid}
+  com { nome: "…", cargo: "admin" ou "vendedor" }.
+*/
+
+/* ── Inicialização ── */
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+
+const REF = (col, id) => doc(db, col, id);
+
+/* ── Expor para o script principal ── */
+window._fb = {
+  login: async (email, senha, lembrar) => {
+    const persistencia = lembrar ? browserLocalPersistence : browserSessionPersistence;
+    await setPersistence(auth, persistencia);
+    return signInWithEmailAndPassword(auth, email, senha);
+  },
+  logout: ()             => signOut(auth),
+
+  /* Salva um documento inteiro */
+  salvar: (col, id, data) => setDoc(REF(col, id), data),
+
+  /* Escuta tempo real em um documento */
+  escutar: (col, id, cb) => onSnapshot(REF(col, id), snap => {
+    cb(snap.exists() ? snap.data() : null);
+  }),
+
+  /* Busca perfil do usuário */
+  perfil: (uid, cb) => onSnapshot(REF('usuarios', uid), snap => {
+    cb(snap.exists() ? snap.data() : null);
+  }),
+
+  onAuth: (cb) => onAuthStateChanged(auth, cb),
+
+  /* ── Gerenciar vendedores ── */
+  criarUsuario: async (email, senha, nome, cargo) => {
+    /* ⚠️ IMPORTANTE: createUserWithEmailAndPassword faz login automático
+       com o novo usuário, deslogando o admin. Para evitar isso, usamos um
+       segundo app Firebase temporário isolado, que não afeta a sessão atual. */
+    const { initializeApp: initApp2, deleteApp } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+    const { getAuth: getAuth2, createUserWithEmailAndPassword: createUser2 } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
+
+    let uid;
+    // Primeiro verifica se é um e-mail de perfil excluído (recadastro)
+    const snap = await getDocs(collection(db, 'usuarios'));
+    const excluido = snap.docs.find(d => d.data().email === email && d.data().cargo === 'excluido');
+
+    if (excluido) {
+      // Recadastro: apenas sobrescreve o perfil no Firestore — o Auth já tem a conta
+      uid = excluido.id;
+    } else {
+      // Novo usuário: cria no Auth usando app secundário para não deslogar o admin
+      const app2 = initApp2(firebaseConfig, `criar-usuario-${Date.now()}`);
+      const auth2 = getAuth2(app2);
+      try {
+        const cred = await createUser2(auth2, email, senha);
+        uid = cred.user.uid;
+      } finally {
+        await deleteApp(app2); // limpa o app temporário
+      }
+    }
+    await setDoc(doc(db, 'usuarios', uid), { nome, cargo, email });
+    return uid;
+  },
+
+  trocarSenha: async (novaSenha) => {
+    // Troca a senha do usuário ATUAL logado
+    await updatePassword(auth.currentUser, novaSenha);
+  },
+
+  listarVendedores: async () => {
+    const snap = await getDocs(collection(db, 'usuarios'));
+    return snap.docs.map(d => ({ uid: d.id, ...d.data() }));
+  },
+
+  excluirPerfilVendedor: async (uid) => {
+    /* Marca como excluído em vez de deletar o doc.
+       Isso permite reutilizar o e-mail: ao criar um novo usuário
+       com o mesmo e-mail, o Firebase Auth reutiliza a conta existente
+       e o perfil é sobrescrito com os novos dados. */
+    await setDoc(doc(db, 'usuarios', uid), { cargo: 'excluido', nome: '', email: '' });
+  }
 };
 
-let EU = null;         // usuário logado
-let vendaTemp = null;  // dados da venda a confirmar
+/* Sinaliza que o módulo carregou */
+window._fbPronto = true;
+document.dispatchEvent(new Event('fb-pronto'));
+</script>
 
-/* ══════════════════════════════════════════════
-   AUTH
-══════════════════════════════════════════════ */
-function login() {
-    const u = document.getElementById('input-user').value.trim().toLowerCase();
-    const p = document.getElementById('input-pass').value;
-    const erro = document.getElementById('login-erro');
-    const usr = USUARIOS[u];
+<!-- ══════════════════════════════════════════════════════════════
+     APLICAÇÃO PRINCIPAL
+══════════════════════════════════════════════════════════════ -->
+<script>
+/* ════════════════════════════════════════
+   ESTADO GLOBAL
+════════════════════════════════════════ */
+let EU = null;           // usuário logado { uid, email, nome, cargo }
+let DB = {               // espelho local dos dados do Firestore
+  estoque: [],
+  pedidos: [],
+  vendas:  [],
+  usuarios: []
+};
+let paginaAtual = '';
+let vendaTemp   = null;
+let _unsubs     = [];    // funções de cancelar listeners
 
-    if (!usr || usr.senha !== p) { erro.style.display = 'block'; return; }
-    erro.style.display = 'none';
-    EU = { login: u, ...usr };
-
-    document.getElementById('tela-login').style.display = 'none';
-    document.getElementById('app').style.display = 'block';
-    document.getElementById('nome-perfil').textContent = EU.nome + (EU.cargo === 'admin' ? ' · Admin' : ' · Vendedor');
-
-    configurarInterface();
-    renderizarTudo();
+/* Calcula estoque reservado (pedidos pendentes) por produto */
+function estoqueReservado(prodId) {
+  return DB.pedidos.filter(p => p.prodId === prodId).reduce((s,p) => s + p.qtd, 0);
+}
+/* Estoque disponível real = qtd - reservado */
+function estoqueDisponivel(prod) {
+  return Math.max(0, prod.qtd - estoqueReservado(prod.id));
 }
 
-function logout() {
-    EU = null; vendaTemp = null;
-    document.getElementById('tela-login').style.display = 'flex';
-    document.getElementById('app').style.display = 'none';
-    document.getElementById('input-user').value = '';
-    document.getElementById('input-pass').value = '';
-}
-
-/* ══════════════════════════════════════════════
-   INTERFACE — tabs e colunas por cargo
-══════════════════════════════════════════════ */
-function configurarInterface() {
-    const isAdmin = EU.cargo === 'admin';
-
-    // Colunas exclusivas admin
-    ['th-custo','th-margem','th-acoes'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.style.display = isAdmin ? '' : 'none';
-    });
-    const btnNovo = document.getElementById('btn-novo-produto');
-    if (btnNovo) btnNovo.style.display = isAdmin ? '' : 'none';
-
-    // Tabs
-    const nav = document.getElementById('nav-tabs');
-    if (isAdmin) {
-        nav.innerHTML = `
-            <button class="tab-btn active" onclick="switchTab('dash',this)">📊 Dashboard</button>
-            <button class="tab-btn" onclick="switchTab('estoque',this)">📦 Estoque</button>
-            <button class="tab-btn" id="tab-alertas-btn" onclick="switchTab('alertas',this)">
-                🔔 Alertas<span id="count-alertas" class="badge-count" style="display:none">0</span>
-            </button>`;
-        switchTab('dash', nav.querySelector('.tab-btn'));
-    } else {
-        nav.innerHTML = `
-            <button class="tab-btn active" onclick="switchTab('estoque',this)">📦 Estoque</button>
-            <button class="tab-btn" onclick="switchTab('meus-pedidos',this)">📋 Meus Pedidos</button>`;
-        switchTab('estoque', nav.querySelector('.tab-btn'));
-    }
-}
-
-function switchTab(id, btn) {
-    document.querySelectorAll('.content').forEach(c => c.style.display = 'none');
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    const sec = document.getElementById('tab-' + id);
-    if (sec) sec.style.display = 'block';
-    if (btn) btn.classList.add('active');
-}
-
-/* ══════════════════════════════════════════════
-   MODAIS
-══════════════════════════════════════════════ */
-function abrirModal(id)  { document.getElementById(id).classList.add('open'); }
-function fecharModal(id) { document.getElementById(id).classList.remove('open'); }
-
-// Fechar ao clicar fora
-document.querySelectorAll('.modal-overlay').forEach(m => {
-    m.addEventListener('click', e => { if (e.target === m) fecharModal(m.id); });
-});
-
-/* ══════════════════════════════════════════════
-   PRODUTOS — CRUD (Admin)
-══════════════════════════════════════════════ */
-function abrirModalProduto(id = null) {
-    document.getElementById('p-id').value    = id || '';
-    document.getElementById('p-nome').value  = '';
-    document.getElementById('p-desc').value  = '';
-    document.getElementById('p-custo').value = '';
-    document.getElementById('p-venda').value = '';
-    document.getElementById('p-qtd').value   = '';
-    document.getElementById('margem-preview').style.display = 'none';
-    document.getElementById('modal-prod-titulo').textContent = id ? '✏️ Editar Móvel' : '📦 Cadastrar Novo Móvel';
-
-    if (id) {
-        const p = DB.estoque.find(x => x.id === id);
-        if (p) {
-            document.getElementById('p-nome').value  = p.nome;
-            document.getElementById('p-desc').value  = p.desc;
-            document.getElementById('p-custo').value = p.custo;
-            document.getElementById('p-venda').value = p.venda;
-            document.getElementById('p-qtd').value   = p.qtd;
-            atualizarMargem();
+/* ════════════════════════════════════════
+   INICIALIZAÇÃO — aguarda Firebase módulo
+════════════════════════════════════════ */
+function iniciar() {
+  window._fb.onAuth(async user => {
+    if (user) {
+      /* Usuário já está logado (sessão ativa) */
+      window._fb.perfil(user.uid, async perfil => {
+        if (!perfil) {
+          await window._fb.logout();
+          esconderLoading();
+          mostrarLogin();
+          const err = document.getElementById('login-erro');
+          err.textContent = '⚠ Acesso não autorizado. Contate o administrador.';
+          err.style.display = 'block';
+          return;
         }
-    }
-    abrirModal('modal-produto');
-}
-
-function atualizarMargem() {
-    const c = parseFloat(document.getElementById('p-custo').value);
-    const v = parseFloat(document.getElementById('p-venda').value);
-    const box = document.getElementById('margem-preview');
-    if (c > 0 && v > 0) {
-        const lucro = v - c;
-        const pct = ((lucro / v) * 100).toFixed(1);
-        const cor = lucro < 0 ? 'var(--danger)' : 'var(--success)';
-        box.style.display = 'block';
-        box.innerHTML = `Lucro unitário: <strong style="color:${cor}">R$ ${brl(lucro)}</strong> &nbsp;|&nbsp; Margem: <strong style="color:${cor}">${pct}%</strong>`;
+        if (!['admin','vendedor'].includes(perfil.cargo)) {
+          await window._fb.logout();
+          esconderLoading();
+          mostrarLogin();
+          const err = document.getElementById('login-erro');
+          err.textContent = perfil.cargo === 'excluido'
+            ? '⚠ Seu acesso foi removido. Contate o administrador.'
+            : '⚠ Perfil inválido. Contate o administrador.';
+          err.style.display = 'block';
+          return;
+        }
+        EU = { uid: user.uid, email: user.email, ...perfil };
+        esconderLoading();
+        mostrarApp();
+        iniciarListeners();
+      });
     } else {
-        box.style.display = 'none';
+      esconderLoading();
+      mostrarLogin();
     }
+  });
 }
 
-function salvarProduto() {
-    const id    = document.getElementById('p-id').value;
-    const nome  = document.getElementById('p-nome').value.trim();
-    const desc  = document.getElementById('p-desc').value.trim();
-    const custo = parseFloat(document.getElementById('p-custo').value);
-    const venda = parseFloat(document.getElementById('p-venda').value);
-    const qtd   = parseInt(document.getElementById('p-qtd').value) || 0;
+document.addEventListener('fb-pronto', iniciar);
+/* Fallback: se o evento já disparou antes deste script rodar */
+if (window._fbPronto) iniciar();
 
-    if (!nome)          return alert('Informe o nome do móvel.');
-    if (isNaN(custo) || custo < 0) return alert('Informe um custo válido.');
-    if (isNaN(venda) || venda < 0) return alert('Informe um preço de venda válido.');
-    if (venda < custo && !confirm(`O preço de venda (R$ ${brl(venda)}) é menor que o custo (R$ ${brl(custo)}). Salvar mesmo assim?`)) return;
-
-    if (id) {
-        const p = DB.estoque.find(x => x.id === parseInt(id));
-        if (p) Object.assign(p, { nome, desc, custo, venda, qtd });
-    } else {
-        DB.estoque.push({ id: Date.now(), nome, desc, custo, venda, qtd });
-    }
-    salvarDB();
-    fecharModal('modal-produto');
-    renderizarTudo();
+/* ── helpers de tela ── */
+function esconderLoading() { document.getElementById('tela-loading').style.display = 'none'; }
+function mostrarLogin() {
+  document.getElementById('tela-login').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  restaurarEmailSalvo();
+}
+function mostrarApp() {
+  document.getElementById('tela-login').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  const inic = (EU.nome||'U').split(' ').map(x=>x[0]).slice(0,2).join('');
+  document.getElementById('user-av').textContent = inic;
+  document.getElementById('user-nm').textContent = EU.nome;
+  document.getElementById('user-rl').textContent = EU.cargo==='admin' ? '⭐ Administrador' : '👤 Vendedor';
+  /* ajusta label do tema */
+  atualizarLabelTema();
+  configurarSidebar();
 }
 
-function excluirProduto(id) {
-    const p = DB.estoque.find(x => x.id === id);
-    if (!p || !confirm(`Excluir "${p.nome}" permanentemente?`)) return;
-    DB.estoque = DB.estoque.filter(x => x.id !== id);
-    salvarDB();
-    renderizarTudo();
+/* ════════════════════════════════════════
+   LISTENERS FIRESTORE — tempo real
+════════════════════════════════════════ */
+function iniciarListeners() {
+  pararListeners();
+
+  _unsubs.push(window._fb.escutar('empresa', 'estoque', dados => {
+    DB.estoque = dados?.items || estoqueDefault();
+    /* Salva padrão se doc não existir ainda */
+    if (!dados) window._fb.salvar('empresa', 'estoque', { items: DB.estoque });
+    atualizarPaginaAtual();
+  }));
+
+  _unsubs.push(window._fb.escutar('empresa', 'pedidos', dados => {
+    DB.pedidos = dados?.items || [];
+    atualizarBadges();
+    if (paginaAtual === 'alertas')      renderAlertas();
+    if (paginaAtual === 'meus-pedidos') renderMeusPedidos();
+    if (paginaAtual === 'estoque')      renderEstoque(); // atualiza reservas visíveis
+  }));
+
+  _unsubs.push(window._fb.escutar('empresa', 'vendas', dados => {
+    DB.vendas = dados?.items || [];
+    if (paginaAtual === 'dash')      renderDash();
+    if (paginaAtual === 'historico') renderHistorico();
+    if (paginaAtual === 'meus-pedidos') renderMeusPedidos();
+  }));
 }
 
-function abrirReporEstoque(id) {
-    const p = DB.estoque.find(x => x.id === id);
-    document.getElementById('repor-id').value = id;
-    document.getElementById('repor-nome').textContent = p.nome + ' — Estoque atual: ' + p.qtd + ' un';
-    document.getElementById('repor-qtd').value = '';
-    abrirModal('modal-repor');
+function pararListeners() { _unsubs.forEach(u => u()); _unsubs = []; }
+
+function atualizarPaginaAtual() {
+  switch (paginaAtual) {
+    case 'dash':    renderDash();    break;
+    case 'estoque': renderEstoque(); break;
+  }
 }
 
-function confirmarRepor() {
-    const id  = parseInt(document.getElementById('repor-id').value);
-    const qtd = parseInt(document.getElementById('repor-qtd').value);
-    if (!qtd || qtd <= 0) return alert('Informe uma quantidade válida.');
-    const p = DB.estoque.find(x => x.id === id);
-    if (p) { p.qtd += qtd; salvarDB(); fecharModal('modal-repor'); renderizarTudo(); }
+/* ── Salvar helpers ── */
+const salvarEstoque = () => window._fb.salvar('empresa', 'estoque', { items: DB.estoque });
+const salvarPedidos = () => window._fb.salvar('empresa', 'pedidos', { items: DB.pedidos });
+const salvarVendas  = () => window._fb.salvar('empresa', 'vendas',  { items: DB.vendas  });
+
+/* ── Estoque padrão (primeiro acesso) ── */
+function estoqueDefault() {
+  return [
+    { id:1, nome:'Guarda-Roupa Casal Gold',   desc:'MDF 100%, Cor Imbuia, 6 portas',    custo:850,  venda:1950, qtd:5 },
+    { id:2, nome:'Cama Box Queen Plush',       desc:'Molas Ensacadas, 158x198cm',        custo:600,  venda:1400, qtd:8 },
+    { id:3, nome:'Sofá 3 Lugares Veludo',      desc:'Veludo cinza, pés dourados',         custo:1200, venda:2800, qtd:3 },
+    { id:4, nome:'Mesa de Jantar 6 Lugares',   desc:'Vidro temperado, base inox',         custo:750,  venda:1800, qtd:1 },
+    { id:5, nome:'Rack para TV 65"',           desc:'MDF branco, 3 nichos, porta vidro',  custo:420,  venda:980,  qtd:6 }
+  ];
 }
 
-/* ══════════════════════════════════════════════
-   VENDAS — fluxo vendedor → admin
-══════════════════════════════════════════════ */
-function abrirModalVenda(id) {
-    const qtdEl = document.getElementById(`qtd-${id}`);
-    const qtd   = parseInt(qtdEl.value);
-    const p     = DB.estoque.find(x => x.id === id);
-
-    if (!qtd || qtd <= 0)  return alert('Informe uma quantidade válida.');
-    if (qtd > p.qtd)       return alert(`Estoque insuficiente. Disponível: ${p.qtd} unidade(s).`);
-
-    vendaTemp = { prodId: id, qtd };
-    const total = p.venda * qtd;
-
-    document.getElementById('modal-venda-info').innerHTML = `
-        <div class="info-box">
-            <p style="font-weight:700;font-size:1rem;margin-bottom:8px">${p.nome}</p>
-            <p style="color:#777;font-size:0.85rem;margin-bottom:12px">${p.desc}</p>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-                <div><p style="font-size:0.75rem;color:#aaa;text-transform:uppercase">Quantidade</p><p style="font-weight:700;font-size:1.1rem">${qtd} un</p></div>
-                <div><p style="font-size:0.75rem;color:#aaa;text-transform:uppercase">Total da Venda</p><p style="font-weight:700;font-size:1.1rem;color:var(--success)">R$ ${brl(total)}</p></div>
-            </div>
-        </div>
-        <p style="font-size:0.82rem;color:#aaa;text-align:center">O pedido será enviado ao administrador para aprovação antes de baixar o estoque.</p>`;
-
-    abrirModal('modal-venda');
+/* ════════════════════════════════════════
+   AUTH
+════════════════════════════════════════ */
+async function fazerLogin() {
+  const email  = document.getElementById('inp-email').value.trim();
+  const senha  = document.getElementById('inp-senha').value;
+  const lembrar= document.getElementById('lembrar-me').checked;
+  const btn    = document.getElementById('btn-login');
+  const erro   = document.getElementById('login-erro');
+  erro.style.display = 'none';
+  btn.disabled = true; btn.textContent = 'Entrando…';
+  try {
+    await window._fb.login(email, senha, lembrar);
+    if (lembrar) localStorage.setItem('mp_email_salvo', email);
+    else         localStorage.removeItem('mp_email_salvo');
+    /* onAuthStateChanged cuida do restante */
+  } catch {
+    erro.style.display = 'block';
+    btn.disabled = false; btn.textContent = 'Entrar →';
+  }
 }
 
-function confirmarVenda() {
-    if (!vendaTemp) return;
-    const { prodId, qtd } = vendaTemp;
-    const p = DB.estoque.find(x => x.id === prodId);
-
-    if (qtd > p.qtd) {
-        alert('Estoque insuficiente no momento. Pedido cancelado.');
-        fecharModal('modal-venda');
-        vendaTemp = null;
-        return;
-    }
-
-    DB.pedidos.push({
-        idPedido: Date.now(),
-        prodId:   p.id,
-        nome:     p.nome,
-        qtd,
-        precoUnit: p.venda,
-        custoUnit: p.custo,
-        total:     p.venda * qtd,
-        vendedor:  EU.nome,
-        loginVend: EU.login,
-        dataCriado: new Date().toISOString()
-    });
-
-    salvarDB();
-    fecharModal('modal-venda');
-    const el = document.getElementById(`qtd-${prodId}`);
-    if (el) el.value = '';
-    vendaTemp = null;
-    alert('✅ Pedido enviado! Aguarde a aprovação do Administrador.');
-    renderizarTudo();
+/* Restaura e-mail salvo na tela de login */
+function restaurarEmailSalvo() {
+  const saved = localStorage.getItem('mp_email_salvo');
+  if (saved) {
+    const el = document.getElementById('inp-email');
+    if (el) { el.value = saved; document.getElementById('lembrar-me').checked = true; }
+  }
 }
 
-function aprovarPedido(idPedido) {
-    const idx = DB.pedidos.findIndex(x => x.idPedido === idPedido);
-    if (idx < 0) return;
-    const ped = DB.pedidos[idx];
-    const p   = DB.estoque.find(x => x.id === ped.prodId);
-
-    if (!p) return alert('Produto não encontrado no estoque.');
-    if (p.qtd < ped.qtd) return alert(`Estoque insuficiente! Disponível: ${p.qtd}, Pedido: ${ped.qtd}`);
-
-    p.qtd -= ped.qtd;
-    DB.vendas.push({ ...ped, dataAprovado: new Date().toISOString() });
-    DB.pedidos.splice(idx, 1);
-    salvarDB();
-    renderizarTudo();
+async function fazerLogout() {
+  pararListeners();
+  await window._fb.logout();
+  EU = null; vendaTemp = null; paginaAtual = '';
+  DB = { estoque: [], pedidos: [], vendas: [] };
+  mostrarLogin();
+  document.getElementById('inp-email').value = '';
+  document.getElementById('inp-senha').value = '';
 }
 
-function rejeitarPedido(idPedido) {
-    if (!confirm('Rejeitar e excluir este pedido?')) return;
-    DB.pedidos = DB.pedidos.filter(x => x.idPedido !== idPedido);
-    salvarDB();
-    renderizarTudo();
+/* ════════════════════════════════════════
+   TEMA CLARO / ESCURO
+════════════════════════════════════════ */
+;(function() {
+  const t = localStorage.getItem('mp_tema') || 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+})();
+
+function alternarTema() {
+  const atual = document.documentElement.getAttribute('data-theme');
+  const novo  = atual === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', novo);
+  localStorage.setItem('mp_tema', novo);
+  atualizarLabelTema();
+}
+function atualizarLabelTema() {
+  const t = document.documentElement.getAttribute('data-theme');
+  const el = document.getElementById('theme-label');
+  if (el) el.textContent = t === 'dark' ? '🌙 Modo Escuro' : '☀️ Modo Claro';
 }
 
-/* ══════════════════════════════════════════════
-   RENDER
-══════════════════════════════════════════════ */
-function renderizarTudo() {
-    renderEstoque();
-    renderAlertas();
-    if (EU.cargo === 'admin') renderDashboard();
-    else renderMeusPedidos();
+/* ════════════════════════════════════════
+   SIDEBAR / NAVEGAÇÃO
+════════════════════════════════════════ */
+function configurarSidebar() {
+  const isAdmin = EU.cargo === 'admin';
+  const nav = document.getElementById('sidebar-nav');
+
+  if (isAdmin) {
+    nav.innerHTML = `
+      <span class="nav-sec">Principal</span>
+      <button class="nav-item" onclick="irPara('dash',this)"    id="nav-dash"><span class="nav-icon">📊</span><span>Dashboard</span></button>
+      <button class="nav-item" onclick="irPara('estoque',this)" id="nav-estoque"><span class="nav-icon">📦</span><span>Estoque</span></button>
+      <span class="nav-sec">Vendas</span>
+      <button class="nav-item" onclick="irPara('alertas',this)" id="nav-alertas">
+        <span class="nav-icon">🔔</span><span>Aprovações</span>
+        <span class="nav-badge" id="nav-badge">0</span>
+      </button>
+      <button class="nav-item" onclick="irPara('historico',this)" id="nav-historico"><span class="nav-icon">📋</span><span>Histórico</span></button>
+      <span class="nav-sec">Administração</span>
+      <button class="nav-item" onclick="abrirModalVendedores()" id="nav-vendedores"><span class="nav-icon">👥</span><span>Usuários</span></button>
+      <button class="nav-item" onclick="abrirTrocarMinhaSenha()" id="nav-minha-senha"><span class="nav-icon">🔑</span><span>Minha Senha</span></button>`;
+    irPara('dash', document.getElementById('nav-dash'));
+  } else {
+    nav.innerHTML = `
+      <span class="nav-sec">Vendas</span>
+      <button class="nav-item" onclick="irPara('estoque',this)"     id="nav-estoque"><span class="nav-icon">📦</span><span>Catálogo</span></button>
+      <button class="nav-item" onclick="irPara('meus-pedidos',this)" id="nav-mp"><span class="nav-icon">📋</span><span>Meus Pedidos</span></button>
+      <span class="nav-sec">Conta</span>
+      <button class="nav-item" onclick="abrirTrocarMinhaSenha()" id="nav-minha-senha"><span class="nav-icon">🔑</span><span>Minha Senha</span></button>`;
+    irPara('estoque', document.getElementById('nav-estoque'));
+  }
 }
 
+const PAGINAS = {
+  'dash':        { t:'Dashboard',    s:'Visão geral do negócio' },
+  'estoque':     { t:'Estoque',      s:'Gestão de produtos e inventário' },
+  'alertas':     { t:'Aprovações',   s:'Pedidos pendentes de confirmação' },
+  'historico':   { t:'Histórico',    s:'Todas as vendas finalizadas' },
+  'meus-pedidos':{ t:'Meus Pedidos', s:'Acompanhe suas vendas' },
+};
+
+function irPara(pagina, btn) {
+  paginaAtual = pagina;
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const pg = PAGINAS[pagina] || {};
+  document.getElementById('tp-titulo').textContent = pg.t || '';
+  document.getElementById('tp-sub').textContent    = pg.s || '';
+  const act = document.getElementById('tp-actions');
+  act.innerHTML = (pagina === 'estoque' && EU.cargo === 'admin')
+    ? `<button class="btn btn-primary btn-sm" onclick="abrirModalProduto()">+ Novo Móvel</button>` : '';
+  renderPagina(pagina);
+  atualizarBadges();
+}
+
+/* ════════════════════════════════════════
+   PÁGINAS
+════════════════════════════════════════ */
+function renderPagina(p) {
+  const area = document.getElementById('content-area');
+  const html = {
+    'dash':         htmlDash,
+    'estoque':      htmlEstoque,
+    'alertas':      htmlAlertas,
+    'historico':    htmlHistorico,
+    'meus-pedidos': htmlMeusPedidos
+  };
+  if (html[p]) { area.innerHTML = html[p](); }
+  const render = {
+    'dash':         renderDash,
+    'estoque':      renderEstoque,
+    'alertas':      renderAlertas,
+    'historico':    renderHistorico,
+    'meus-pedidos': renderMeusPedidos
+  };
+  if (render[p]) render[p]();
+}
+
+/* ── DASHBOARD ── */
+function htmlDash() {
+  return `
+  <div class="stat-grid">
+    <div class="stat-card" style="--acc:var(--gold)"><div class="stat-ico">💰</div><div class="stat-label">Faturamento Total</div><div class="stat-value" id="s-fat" style="color:var(--gold)">R$ 0</div></div>
+    <div class="stat-card" style="--acc:var(--success)"><div class="stat-ico">📈</div><div class="stat-label">Lucro Estimado</div><div class="stat-value" id="s-luc" style="color:var(--success)">R$ 0</div></div>
+    <div class="stat-card" style="--acc:#818CF8"><div class="stat-ico">🛒</div><div class="stat-label">Vendas Finalizadas</div><div class="stat-value" id="s-qtd" style="color:#818CF8">0</div></div>
+    <div class="stat-card" style="--acc:var(--warn)"><div class="stat-ico">📦</div><div class="stat-label">Unid. em Estoque</div><div class="stat-value" id="s-stk" style="color:var(--warn)">0</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-bottom:1.2rem">
+    <div class="card" style="margin-bottom:0"><div class="card-title">🏆 Ranking de Vendas</div><div id="ranking"></div></div>
+    <div class="card" style="margin-bottom:0"><div class="card-title">⚠ Estoque Crítico</div><div id="stk-baixo"></div></div>
+  </div>
+  <div class="card"><div class="card-title">📊 Vendas Recentes</div><div id="vendas-rec"></div></div>`;
+}
+function renderDash() {
+  const v   = DB.vendas;
+  const fat = v.reduce((s,x)=>s+x.total,0);
+  const luc = v.reduce((s,x)=>s+(x.total-x.custoUnit*x.qtd),0);
+  const stk = DB.estoque.reduce((s,p)=>s+p.qtd,0);
+  set('s-fat','R$ '+brl(fat)); set('s-luc','R$ '+brl(luc));
+  set('s-qtd',v.length); set('s-stk',stk);
+
+  const rm={};
+  v.forEach(x=>{ rm[x.vendedor]=(rm[x.vendedor]||0)+x.total; });
+  const rs = Object.entries(rm).sort((a,b)=>b[1]-a[1]);
+  const md = ['🥇','🥈','🥉'];
+  set('ranking', rs.length ? rs.map((r,i)=>`
+    <div class="rank-row">
+      <span style="font-size:1.1rem;width:24px">${md[i]||'#'+(i+1)}</span>
+      <span style="flex:1;font-size:.87rem">${r[0]}</span>
+      <strong style="color:var(--success);font-size:.88rem">R$ ${brl(r[1])}</strong>
+    </div>`).join('')
+    : `<div class="empty-state" style="padding:1.5rem"><div class="empty-icon" style="font-size:1.8rem">🏆</div><p>Sem vendas ainda</p></div>`);
+
+  const bx = DB.estoque.filter(p=>p.qtd<=3);
+  set('stk-baixo', bx.length ? bx.map(p=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 4px;border-bottom:1px solid var(--border)">
+      <span style="font-size:.87rem">${p.nome}</span>
+      <span class="badge ${p.qtd===0?'badge-bad':'badge-warn'}">${p.qtd===0?'Zerado':p.qtd+' un'}</span>
+    </div>`).join('')
+    : `<div class="empty-state" style="padding:1.5rem"><p>Estoque em dia ✓</p></div>`);
+
+  const rec = [...v].reverse().slice(0,8);
+  const isAdm = EU?.cargo === 'admin';
+  set('vendas-rec', rec.length ? `<div style="overflow-x:auto"><table>
+    <thead><tr><th>Data</th><th>Vendedor</th><th>Produto</th><th>Qtd</th><th>Total</th><th>Lucro</th>${isAdm ? '<th>Ações</th>' : ''}</tr></thead>
+    <tbody>${rec.map(x=>{
+      const lucro = x.total - x.custoUnit*x.qtd;
+      const abaixo = x.precoUnit && x.total < x.precoUnit * x.qtd;
+      return `<tr>
+        <td style="font-size:.76rem;color:var(--text-muted);white-space:nowrap">${fmt(x.dataAprovado)}</td>
+        <td>${x.vendedor}</td><td>${x.nome}</td><td style="text-align:center">${x.qtd}</td>
+        <td style="color:${abaixo ? 'var(--warn)' : 'var(--success)'};font-weight:700">R$ ${brl(x.total)}${abaixo ? ' <span title="Venda com desconto abaixo do preço">⚠️</span>' : ''}</td>
+        <td style="color:${lucro < 0 ? 'var(--danger)' : 'var(--success)'}">R$ ${brl(lucro)}</td>
+        ${isAdm ? `<td><div style="display:flex;gap:4px">
+          <button class="btn btn-ghost btn-icon btn-sm" onclick="abrirEditarVenda(${x.idPedido})" title="Editar valor da venda">✏️</button>
+          <button class="btn btn-danger btn-icon btn-sm" onclick="excluirVenda(${x.idPedido})" title="Excluir venda">🗑️</button>
+        </div></td>` : ''}
+      </tr>`;
+    }).join('')}</tbody></table></div>`
+    : `<div class="empty-state"><p>Nenhuma venda finalizada ainda.</p></div>`);
+}
+
+/* ── ESTOQUE ── */
+function htmlEstoque() {
+  return `
+  <div id="alertas-stk" style="margin-bottom:1rem"></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;gap:12px;flex-wrap:wrap">
+    <div class="search-wrap" style="flex:1;max-width:300px">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="busca" placeholder="Buscar produto…" oninput="renderEstoque()" style="margin-bottom:0">
+    </div>
+    <select id="filtro-stk" onchange="renderEstoque()" style="margin-bottom:0;width:auto;padding:9px 12px">
+      <option value="">Todos</option>
+      <option value="ok">Em estoque</option>
+      <option value="baixo">Estoque baixo</option>
+      <option value="zero">Esgotado</option>
+    </select>
+  </div>
+  <div class="table-wrap"><table>
+    <thead><tr>
+      <th>Produto</th><th>Disponível</th>
+      <th id="th-custo"  style="display:none">Custo</th>
+      <th>Preço Venda</th>
+      <th id="th-margem" style="display:none">Margem</th>
+      <th>Realizar Venda</th>
+      <th id="th-acoes"  style="display:none">Ações</th>
+    </tr></thead>
+    <tbody id="lista-corpo"></tbody>
+  </table>
+  <div id="stk-empty" class="empty-state" style="display:none"><div class="empty-icon">📭</div><p>Nenhum produto cadastrado.</p></div>
+  </div>`;
+}
 function renderEstoque() {
-    const isAdmin = EU.cargo === 'admin';
-    const corpo = document.getElementById('lista-corpo');
-    const empty = document.getElementById('estoque-empty');
-    const alertBox = document.getElementById('alertas-estoque');
+  const isAdmin = EU.cargo === 'admin';
+  ['th-custo','th-margem','th-acoes'].forEach(id=>{
+    const el = document.getElementById(id); if (el) el.style.display = isAdmin ? '' : 'none';
+  });
+  const corpo = document.getElementById('lista-corpo');
+  const empty = document.getElementById('stk-empty');
+  const aBox  = document.getElementById('alertas-stk');
+  if (!corpo) return;
 
-    // Alertas de estoque baixo
-    const baixo = DB.estoque.filter(p => p.qtd <= 2);
-    alertBox.innerHTML = baixo.map(p =>
-        `<div class="alerta-bar">⚠️ <strong>${p.nome}</strong> — ${p.qtd === 0 ? 'Estoque zerado!' : `Apenas ${p.qtd} unidade(s) restante(s).`}${isAdmin ? ` <button class="btn btn-ghost btn-icon" style="margin-left:auto" onclick="abrirReporEstoque(${p.id})">+ Repor</button>` : ''}</div>`
-    ).join('');
+  /* Alertas */
+  const bxA = DB.estoque.filter(p=>p.qtd<=2);
+  if (aBox) aBox.innerHTML = bxA.map(p=>`
+    <div class="alerta-bar">⚠️ <strong>${p.nome}</strong> — ${p.qtd===0?'Estoque zerado!':'Apenas '+p.qtd+' un.'}
+    ${isAdmin?`<button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="abrirRepor(${p.id})">+ Repor</button>`:''}</div>`).join('');
 
-    if (DB.estoque.length === 0) {
-        corpo.innerHTML = '';
-        empty.style.display = 'block';
-        return;
-    }
-    empty.style.display = 'none';
+  const busca  = (document.getElementById('busca')?.value||'').toLowerCase();
+  const filtro = document.getElementById('filtro-stk')?.value||'';
+  let lista    = DB.estoque;
+  if (busca)  lista = lista.filter(p=>p.nome.toLowerCase().includes(busca)||(p.desc||'').toLowerCase().includes(busca));
+  if (filtro==='ok')    lista = lista.filter(p=>p.qtd>3);
+  if (filtro==='baixo') lista = lista.filter(p=>p.qtd>0&&p.qtd<=3);
+  if (filtro==='zero')  lista = lista.filter(p=>p.qtd===0);
 
-    corpo.innerHTML = DB.estoque.map(p => {
-        const badgeCls = p.qtd === 0 ? 'badge-bad' : p.qtd <= 2 ? 'badge-warn' : 'badge-ok';
-        const badgeTxt = p.qtd === 0 ? 'Esgotado' : `${p.qtd} un`;
-        const margem   = p.venda > 0 ? ((p.venda - p.custo) / p.venda * 100).toFixed(0) + '%' : '-';
+  if (!lista.length) { corpo.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display = 'none';
 
-        return `<tr>
-            <td>
-                <strong>${p.nome}</strong>
-                ${p.desc ? `<br><small style="color:#bbb">${p.desc}</small>` : ''}
-            </td>
-            <td><span class="badge ${badgeCls}">${badgeTxt}</span></td>
-            ${isAdmin ? `<td style="color:var(--danger);font-weight:600">R$ ${brl(p.custo)}</td>` : ''}
-            <td style="color:var(--success);font-weight:700">R$ ${brl(p.venda)}</td>
-            ${isAdmin ? `<td style="color:#888">${margem}</td>` : ''}
-            <td>
-                ${p.qtd > 0
-                    ? `<div style="display:flex;gap:6px;align-items:center">
-                           <input type="number" id="qtd-${p.id}" placeholder="Qtd" min="1" max="${p.qtd}" style="margin:0;width:72px;padding:7px;font-size:0.88rem">
-                           <button class="btn btn-success btn-icon" onclick="abrirModalVenda(${p.id})">Vender</button>
-                       </div>`
-                    : `<span style="color:#ccc;font-size:0.82rem">Sem estoque</span>`}
-            </td>
-            ${isAdmin ? `<td>
-                <div style="display:flex;gap:5px">
-                    <button class="btn btn-ghost btn-icon" title="Editar" onclick="abrirModalProduto(${p.id})">✏️</button>
-                    <button class="btn btn-ghost btn-icon" title="Repor estoque" onclick="abrirReporEstoque(${p.id})">📦</button>
-                    <button class="btn btn-danger btn-icon" title="Excluir" onclick="excluirProduto(${p.id})">🗑️</button>
-                </div>
-            </td>` : ''}
-        </tr>`;
-    }).join('');
+  corpo.innerHTML = lista.map(p=>{
+    const reservado  = estoqueReservado(p.id);
+    const disponivel = Math.max(0, p.qtd - reservado);
+    const bc = disponivel===0?'badge-bad':disponivel<=2?'badge-warn':'badge-ok';
+    const bt = disponivel===0?'Esgotado':disponivel+' un';
+    const mg = p.venda>0?((p.venda-p.custo)/p.venda*100).toFixed(0)+'%':'-';
+    return `<tr>
+      <td>
+        <div style="font-weight:600;font-size:.9rem">${p.nome}</div>
+        ${p.desc?`<div style="font-size:.74rem;color:var(--text-muted);margin-top:2px">${p.desc}</div>`:''}
+      </td>
+      <td>
+        <div class="stk-disponivel">
+          <span class="badge ${bc}">${bt}</span>
+          ${reservado>0?`<span class="qtd-real">Total: ${p.qtd} · <span class="badge-reserva">${reservado} reservado${reservado>1?'s':''}</span></span>`:''}
+        </div>
+      </td>
+      ${isAdmin?`<td style="color:var(--danger);font-weight:600">R$ ${brl(p.custo)}</td>`:''}
+      <td style="color:var(--success);font-weight:700">R$ ${brl(p.venda)}</td>
+      ${isAdmin?`<td style="color:var(--text-muted)">${mg}</td>`:''}
+      <td>${disponivel>0
+        ?`<div style="display:flex;gap:6px;align-items:center">
+            <input type="number" id="qtd-${p.id}" placeholder="Qtd" min="1" max="${disponivel}" style="margin:0;width:72px;padding:7px 10px;font-size:.84rem">
+            <button class="btn btn-success btn-sm" onclick="abrirModalVenda(${p.id})">Vender</button>
+          </div>`
+        :`<span style="color:var(--text-muted);font-size:.82rem">${p.qtd>0?'🔒 Reservado':'Sem estoque'}</span>`}
+      </td>
+      ${isAdmin?`<td>
+        <div style="display:flex;gap:4px">
+          <button class="btn btn-ghost btn-icon btn-sm" onclick="abrirModalProduto(${p.id})" title="Editar">✏️</button>
+          <button class="btn btn-ghost btn-icon btn-sm" onclick="abrirRepor(${p.id})"        title="Repor">📦</button>
+          <button class="btn btn-danger btn-icon btn-sm" onclick="excluirProduto(${p.id})"  title="Excluir">🗑️</button>
+        </div>
+      </td>`:''}
+    </tr>`;
+  }).join('');
 }
 
+/* ── ALERTAS ── */
+function htmlAlertas()  { return `<div id="lista-alertas"></div>`; }
 function renderAlertas() {
-    const cont  = document.getElementById('lista-pedidos-pendentes');
-    const badge = document.getElementById('count-alertas');
-    if (!cont) return;
-
-    if (DB.pedidos.length > 0) {
-        if (badge) { badge.textContent = DB.pedidos.length; badge.style.display = 'inline'; }
-        cont.innerHTML = DB.pedidos.map(p => {
-            const lucro = p.total - (p.custoUnit * p.qtd);
-            return `<div class="card pedido-card" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:1rem">
-                <div>
-                    <p style="font-weight:700;margin-bottom:4px">${p.qtd}× ${p.nome}</p>
-                    <p style="font-size:0.83rem;color:#aaa;margin-bottom:6px">Solicitado por <strong>${p.vendedor}</strong> em ${fmt(p.dataCriado)}</p>
-                    <p style="font-size:0.88rem">Total: <strong style="color:var(--success)">R$ ${brl(p.total)}</strong> &nbsp;|&nbsp; Lucro: <strong style="color:var(--success)">R$ ${brl(lucro)}</strong></p>
-                </div>
-                <div style="display:flex;gap:8px">
-                    <button class="btn btn-success" onclick="aprovarPedido(${p.idPedido})">✔ Aprovar</button>
-                    <button class="btn btn-danger"  onclick="rejeitarPedido(${p.idPedido})">✖ Rejeitar</button>
-                </div>
-            </div>`;
-        }).join('');
-    } else {
-        if (badge) badge.style.display = 'none';
-        cont.innerHTML = `<div class="empty-state"><div class="empty-icon">✅</div><p>Nenhum pedido pendente.</p></div>`;
-    }
+  const el = document.getElementById('lista-alertas'); if (!el) return;
+  el.innerHTML = DB.pedidos.length ? DB.pedidos.map(p=>{
+    const lucro = p.total-(p.custoUnit*p.qtd);
+    return `<div class="pedido-card" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+      <div>
+        <p style="font-weight:700;margin-bottom:4px">${p.qtd}× ${p.nome}</p>
+        <p style="font-size:.79rem;color:var(--text-muted);margin-bottom:6px">
+          Por <strong style="color:var(--text)">${p.vendedor}</strong> em ${fmt(p.dataCriado)}
+        </p>
+        <p style="font-size:.87rem">
+          Total: <strong style="color:var(--success)">R$ ${brl(p.total)}</strong>
+          &nbsp;·&nbsp; Lucro: <strong style="color:var(--success)">R$ ${brl(lucro)}</strong>
+        </p>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-success btn-sm" onclick="aprovarPedido(${p.idPedido})">✔ Aprovar</button>
+        <button class="btn btn-danger  btn-sm" onclick="rejeitarPedido(${p.idPedido})">✖ Rejeitar</button>
+      </div>
+    </div>`;
+  }).join('')
+  : `<div class="empty-state"><div class="empty-icon">✅</div><p>Nenhum pedido pendente.</p></div>`;
 }
 
-function renderDashboard() {
-    const v = DB.vendas;
-    const fat  = v.reduce((s, x) => s + x.total, 0);
-    const luc  = v.reduce((s, x) => s + (x.total - x.custoUnit * x.qtd), 0);
-    const stk  = DB.estoque.reduce((s, p) => s + p.qtd, 0);
-
-    document.getElementById('stat-fat').textContent = 'R$ ' + brl(fat);
-    document.getElementById('stat-luc').textContent = 'R$ ' + brl(luc);
-    document.getElementById('stat-qtd').textContent = v.length;
-    document.getElementById('stat-stk').textContent = stk;
-
-    // Ranking
-    const rankMap = {};
-    v.forEach(x => { rankMap[x.vendedor] = (rankMap[x.vendedor] || 0) + x.total; });
-    const sorted = Object.entries(rankMap).sort((a,b) => b[1] - a[1]);
-    const medals = ['🥇','🥈','🥉'];
-    document.getElementById('ranking-lista').innerHTML = sorted.length > 0
-        ? sorted.map((r,i) => `
-            <div class="rank-row">
-                <span style="font-size:1.1rem">${medals[i] || '#' + (i+1)}</span>
-                <span style="flex:1;margin:0 12px">${r[0]}</span>
-                <strong style="color:var(--success)">R$ ${brl(r[1])}</strong>
-            </div>`).join('')
-        : '<div class="empty-state" style="padding:1.5rem"><p>Nenhuma venda finalizada.</p></div>';
-
-    // Estoque baixo no dash
-    const baixo = DB.estoque.filter(p => p.qtd <= 3);
-    document.getElementById('estoque-baixo-dash').innerHTML = baixo.length > 0
-        ? baixo.map(p => `
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 4px;border-bottom:1px solid var(--border)">
-                <span style="font-size:0.9rem">${p.nome}</span>
-                <span class="badge ${p.qtd === 0 ? 'badge-bad' : 'badge-warn'}">${p.qtd === 0 ? 'Zerado' : p.qtd + ' un'}</span>
-            </div>`).join('')
-        : '<div class="empty-state" style="padding:1.5rem;color:#aaa"><p>Estoque em dia ✓</p></div>';
-
-    // Histórico
-    const hist = [...v].reverse();
-    document.getElementById('historico-vendas').innerHTML = hist.length > 0
-        ? `<div style="overflow-x:auto"><table>
-            <thead><tr><th>Data</th><th>Vendedor</th><th>Produto</th><th>Qtd</th><th>Total</th><th>Lucro</th></tr></thead>
-            <tbody>${hist.map(x => `
-                <tr>
-                    <td style="font-size:0.82rem;color:#aaa;white-space:nowrap">${fmt(x.dataAprovado)}</td>
-                    <td>${x.vendedor}</td>
-                    <td>${x.nome}</td>
-                    <td style="text-align:center">${x.qtd}</td>
-                    <td style="color:var(--success);font-weight:700">R$ ${brl(x.total)}</td>
-                    <td style="color:var(--success)">R$ ${brl(x.total - x.custoUnit * x.qtd)}</td>
-                </tr>`).join('')}
-            </tbody></table></div>`
-        : '<div class="empty-state"><p>Nenhuma venda finalizada ainda.</p></div>';
+/* ── HISTÓRICO ── */
+function htmlHistorico() {
+  const hoje = new Date().toISOString().slice(0,10);
+  const anoAtual = new Date().getFullYear();
+  const anos = Array.from({length:5},(_,i)=>anoAtual-i);
+  const meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  return `
+  <div class="filtro-data-bar">
+    <div class="filtro-grupo">
+      <label>Modo:</label>
+      <select id="filtro-modo" onchange="trocarModoFiltro()" style="min-width:130px">
+        <option value="tudo">Todas as datas</option>
+        <option value="dia">Por dia</option>
+        <option value="mes">Por mês/ano</option>
+        <option value="ano">Por ano</option>
+        <option value="periodo">Período</option>
+      </select>
+    </div>
+    <div id="filtro-campos" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"></div>
+    <button class="btn btn-ghost btn-sm" onclick="renderHistorico()">🔍 Filtrar</button>
+    <button class="btn btn-ghost btn-sm" onclick="exportarCSV()">⬇ CSV</button>
+  </div>
+  <div style="margin-bottom:.6rem"><span id="hist-stats" style="font-size:.81rem;color:var(--text-muted)"></span></div>
+  <div class="card" style="padding:0;overflow:hidden"><div id="hist-tabela"></div></div>`;
 }
 
+function trocarModoFiltro() {
+  const modo = document.getElementById('filtro-modo')?.value || 'tudo';
+  const campos = document.getElementById('filtro-campos');
+  if (!campos) return;
+  const hoje = new Date().toISOString().slice(0,10);
+  const anoAtual = new Date().getFullYear();
+  const meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  if (modo === 'dia') {
+    campos.innerHTML = `<div class="filtro-grupo"><label>Data:</label><input type="date" id="f-dia" value="${hoje}" onchange="renderHistorico()"></div>`;
+  } else if (modo === 'mes') {
+    const opsMes  = meses.map((m,i)=>`<option value="${i+1}" ${new Date().getMonth()===i?'selected':''}>${m}</option>`).join('');
+    const opsAno  = Array.from({length:6},(_,i)=>anoAtual-i).map(a=>`<option value="${a}" ${a===anoAtual?'selected':''}>${a}</option>`).join('');
+    campos.innerHTML = `<div class="filtro-grupo"><label>Mês:</label><select id="f-mes" onchange="renderHistorico()">${opsMes}</select></div>
+      <div class="filtro-grupo"><label>Ano:</label><select id="f-ano" onchange="renderHistorico()">${opsAno}</select></div>`;
+  } else if (modo === 'ano') {
+    const opsAno = Array.from({length:6},(_,i)=>anoAtual-i).map(a=>`<option value="${a}" ${a===anoAtual?'selected':''}>${a}</option>`).join('');
+    campos.innerHTML = `<div class="filtro-grupo"><label>Ano:</label><select id="f-ano2" onchange="renderHistorico()">${opsAno}</select></div>`;
+  } else if (modo === 'periodo') {
+    campos.innerHTML = `<div class="filtro-grupo"><label>De:</label><input type="date" id="f-de" value="${hoje.slice(0,8)}01" onchange="renderHistorico()"></div>
+      <div class="filtro-grupo"><label>Até:</label><input type="date" id="f-ate" value="${hoje}" onchange="renderHistorico()"></div>`;
+  } else {
+    campos.innerHTML = '';
+  }
+  renderHistorico();
+}
+function renderHistorico() {
+  const modo = document.getElementById('filtro-modo')?.value || 'tudo';
+  let v = [...DB.vendas];
+
+  if (modo === 'dia') {
+    const dia = document.getElementById('f-dia')?.value;
+    if (dia) v = v.filter(x => x.dataAprovado && x.dataAprovado.slice(0,10) === dia);
+  } else if (modo === 'mes') {
+    const mes = parseInt(document.getElementById('f-mes')?.value);
+    const ano = parseInt(document.getElementById('f-ano')?.value);
+    if (mes && ano) v = v.filter(x => {
+      const d = new Date(x.dataAprovado);
+      return d.getMonth()+1 === mes && d.getFullYear() === ano;
+    });
+  } else if (modo === 'ano') {
+    const ano = parseInt(document.getElementById('f-ano2')?.value);
+    if (ano) v = v.filter(x => new Date(x.dataAprovado).getFullYear() === ano);
+  } else if (modo === 'periodo') {
+    const de  = document.getElementById('f-de')?.value;
+    const ate = document.getElementById('f-ate')?.value;
+    if (de)  v = v.filter(x => x.dataAprovado && x.dataAprovado.slice(0,10) >= de);
+    if (ate) v = v.filter(x => x.dataAprovado && x.dataAprovado.slice(0,10) <= ate);
+  }
+
+  v = v.reverse();
+  const fat = v.reduce((s,x)=>s+x.total,0);
+  const luc = v.reduce((s,x)=>s+(x.total-x.custoUnit*x.qtd),0);
+  set('hist-stats',`${v.length} venda${v.length!==1?'s':''} encontrada${v.length!==1?'s':''} &nbsp;·&nbsp; <strong style="color:var(--success)">R$ ${brl(fat)}</strong> &nbsp;·&nbsp; Lucro <strong style="color:var(--gold)">R$ ${brl(luc)}</strong>`);
+  set('hist-tabela', v.length ? `<div style="overflow-x:auto"><table>
+    <thead><tr><th>Data</th><th>Vendedor</th><th>Produto</th><th>Qtd</th><th>Total</th><th>Lucro</th><th>Margem</th></tr></thead>
+    <tbody>${v.map(x=>{
+      const l  = x.total-x.custoUnit*x.qtd;
+      const mg = x.total>0?(l/x.total*100).toFixed(0):'0';
+      return `<tr>
+        <td style="font-size:.76rem;color:var(--text-muted);white-space:nowrap">${fmt(x.dataAprovado)}</td>
+        <td>${x.vendedor}</td><td>${x.nome}</td><td style="text-align:center">${x.qtd}</td>
+        <td style="color:var(--success);font-weight:700">R$ ${brl(x.total)}</td>
+        <td style="color:var(--success)">R$ ${brl(l)}</td>
+        <td><span class="badge ${l<0?'badge-bad':'badge-ok'}">${mg}%</span></td>
+      </tr>`;
+    }).join('')}</tbody></table></div>`
+    : `<div class="empty-state"><div class="empty-icon">📋</div><p>Nenhuma venda encontrada para o filtro selecionado.</p></div>`);
+}
+function exportarCSV() {
+  // Usa o mesmo filtro ativo no histórico
+  const modo = document.getElementById('filtro-modo')?.value || 'tudo';
+  let dados = [...DB.vendas];
+  if (modo === 'dia') {
+    const dia = document.getElementById('f-dia')?.value;
+    if (dia) dados = dados.filter(x => x.dataAprovado?.slice(0,10) === dia);
+  } else if (modo === 'mes') {
+    const mes = parseInt(document.getElementById('f-mes')?.value);
+    const ano = parseInt(document.getElementById('f-ano')?.value);
+    if (mes && ano) dados = dados.filter(x => { const d=new Date(x.dataAprovado); return d.getMonth()+1===mes && d.getFullYear()===ano; });
+  } else if (modo === 'ano') {
+    const ano = parseInt(document.getElementById('f-ano2')?.value);
+    if (ano) dados = dados.filter(x => new Date(x.dataAprovado).getFullYear()===ano);
+  } else if (modo === 'periodo') {
+    const de=document.getElementById('f-de')?.value, ate=document.getElementById('f-ate')?.value;
+    if (de)  dados = dados.filter(x => x.dataAprovado?.slice(0,10) >= de);
+    if (ate) dados = dados.filter(x => x.dataAprovado?.slice(0,10) <= ate);
+  }
+  if (!dados.length) return toast('Sem dados para exportar.','error');
+  const rows = [['Data','Vendedor','Produto','Qtd','Total (R$)','Lucro (R$)']];
+  dados.forEach(x=>rows.push([
+    fmt(x.dataAprovado), x.vendedor, `"${x.nome}"`, x.qtd,
+    brl(x.total).replace('.',','), brl(x.total-x.custoUnit*x.qtd).replace('.',',')
+  ]));
+  const blob = new Blob(['\uFEFF'+rows.map(r=>r.join(';')).join('\n')],{type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = 'moveispro_historico.csv'; a.click();
+  toast('CSV exportado!','success');
+}
+
+/* ── MEUS PEDIDOS ── */
+function htmlMeusPedidos() { return `<div id="lista-mp"></div>`; }
 function renderMeusPedidos() {
-    const cont = document.getElementById('lista-meus-pedidos');
-    if (!cont) return;
+  const el = document.getElementById('lista-mp'); if (!el) return;
+  const pend  = DB.pedidos.filter(x=>x.uid===EU.uid);
+  const final = [...DB.vendas].filter(x=>x.uid===EU.uid).reverse();
+  let html = '';
 
-    const pendentes   = DB.pedidos.filter(x => x.loginVend === EU.login);
-    const finalizadas = [...DB.vendas].filter(x => x.loginVend === EU.login).reverse();
+  if (pend.length) {
+    const totPend = pend.reduce((s,x)=>s+(Number(x.total)||0),0);
+    html += `<h3 style="margin-bottom:1rem;font-size:.91rem;color:var(--warn)">⏳ Aguardando Aprovação (${pend.length}) — <span style="color:var(--warn)">R$ ${brl(totPend)} pendente</span></h3>`;
+    html += pend.map(p=>`<div class="pedido-card pendente">
+      <div style="font-weight:700;margin-bottom:4px">${p.qtd}× ${p.nome}</div>
+      <div style="color:var(--success);margin-bottom:4px">R$ ${brl(Number(p.total)||0)}</div>
+      <div style="font-size:.77rem;color:var(--text-muted)">${fmt(p.dataCriado)}</div>
+      <span class="badge badge-warn" style="margin-top:8px">Aguardando</span>
+    </div>`).join('');
+  }
 
-    let html = '';
+  if (final.length) {
+    const tot = final.reduce((s,x)=>s+(Number(x.total)||0),0);
+    html += `<div class="divider"></div>
+      <h3 style="margin-bottom:.5rem;font-size:.91rem">✅ Aprovadas (${final.length})</h3>
+      <div style="background:var(--success-dim);border:1px solid rgba(34,197,94,.22);border-radius:9px;padding:10px 16px;margin-bottom:1rem;display:flex;gap:24px;flex-wrap:wrap">
+        <div><div style="font-size:.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px">Total Faturado</div>
+             <div style="font-size:1.2rem;font-weight:700;color:var(--success)">R$ ${brl(tot)}</div></div>
+        <div><div style="font-size:.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px">Qtd de Vendas</div>
+             <div style="font-size:1.2rem;font-weight:700;color:var(--success)">${final.length}</div></div>
+        <div><div style="font-size:.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px">Ticket Médio</div>
+             <div style="font-size:1.2rem;font-weight:700;color:var(--success)">R$ ${brl(tot/final.length)}</div></div>
+      </div>`;
+    html += final.map(v=>`<div class="pedido-card aprovado">
+      <div style="font-weight:700;margin-bottom:4px">${v.qtd}× ${v.nome}</div>
+      <div style="color:var(--success);margin-bottom:4px">R$ ${brl(Number(v.total)||0)}</div>
+      <div style="font-size:.77rem;color:var(--text-muted)">${fmt(v.dataAprovado)}</div>
+      <span class="badge badge-ok" style="margin-top:8px">Aprovada</span>
+    </div>`).join('');
+  }
 
-    if (pendentes.length > 0) {
-        html += '<h3 style="margin-bottom:1rem">⏳ Aguardando Aprovação</h3>';
-        html += pendentes.map(p => `
-            <div class="card pedido-card pendente" style="margin-bottom:1rem">
-                <p style="font-weight:700">${p.qtd}× ${p.nome}</p>
-                <p style="font-size:0.88rem;color:var(--success);margin-top:4px">R$ ${brl(p.total)}</p>
-                <p style="font-size:0.82rem;color:#aaa;margin-top:4px">Enviado em ${fmt(p.dataCriado)}</p>
-                <span class="badge badge-warn" style="margin-top:6px;display:inline-block">Pendente</span>
-            </div>`).join('');
-    }
-
-    if (finalizadas.length > 0) {
-        const totalMeu = finalizadas.reduce((s,x) => s + x.total, 0);
-        html += `<div class="divider"></div><h3 style="margin-bottom:1rem">✅ Vendas Aprovadas — <span style="color:var(--success)">R$ ${brl(totalMeu)}</span></h3>`;
-        html += finalizadas.map(v => `
-            <div class="card pedido-card aprovado" style="margin-bottom:1rem">
-                <p style="font-weight:700">${v.qtd}× ${v.nome}</p>
-                <p style="font-size:0.88rem;color:var(--success);margin-top:4px">R$ ${brl(v.total)}</p>
-                <p style="font-size:0.82rem;color:#aaa;margin-top:4px">Aprovado em ${fmt(v.dataAprovado)}</p>
-                <span class="badge badge-ok" style="margin-top:6px;display:inline-block">Aprovada</span>
-            </div>`).join('');
-    }
-
-    if (!pendentes.length && !finalizadas.length) {
-        html = `<div class="empty-state"><div class="empty-icon">📋</div><p>Nenhum pedido registrado ainda.</p></div>`;
-    }
-
-    cont.innerHTML = html;
+  if (!pend.length && !final.length)
+    html = `<div class="empty-state"><div class="empty-icon">📋</div><p>Nenhum pedido registrado ainda.</p></div>`;
+  el.innerHTML = html;
 }
 
-/* ══════════════════════════════════════════════
-   HELPERS
-══════════════════════════════════════════════ */
-function brl(n) {
-    return (isNaN(n) ? 0 : n).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+/* ════════════════════════════════════════
+   CRUD PRODUTOS
+════════════════════════════════════════ */
+function abrirModalProduto(id=null) {
+  ['p-nome','p-desc','p-custo','p-venda','p-qtd'].forEach(x=>{ const el=document.getElementById(x); if(el) el.value=''; });
+  document.getElementById('p-id').value = id||'';
+  document.getElementById('margem-preview').style.display = 'none';
+  document.getElementById('mp-titulo').textContent = id ? '✏️ Editar Produto' : '📦 Cadastrar Novo Móvel';
+  if (id) {
+    const p = DB.estoque.find(x=>x.id===id);
+    if (p) {
+      document.getElementById('p-nome').value  = p.nome;
+      document.getElementById('p-desc').value  = p.desc||'';
+      document.getElementById('p-custo').value = p.custo;
+      document.getElementById('p-venda').value = p.venda;
+      document.getElementById('p-qtd').value   = p.qtd;
+      calcMargem();
+    }
+  }
+  am('modal-produto');
 }
-function fmt(iso) {
-    return iso ? new Date(iso).toLocaleString('pt-BR') : '-';
+function calcMargem() {
+  const c=parseFloat(document.getElementById('p-custo').value);
+  const v=parseFloat(document.getElementById('p-venda').value);
+  const box=document.getElementById('margem-preview');
+  if (c>0&&v>0) {
+    const l=v-c, pct=((l/v)*100).toFixed(1);
+    box.style.display='block';
+    box.className='margem-box'+(l<0?' neg':'');
+    box.innerHTML=`Lucro unitário: <strong>R$ ${brl(l)}</strong> &nbsp;|&nbsp; Margem: <strong>${pct}%</strong>`;
+  } else { box.style.display='none'; }
 }
+async function salvarProduto() {
+  if (EU?.cargo !== 'admin') return toast('Acesso negado.','error');
+  const id    = document.getElementById('p-id').value;
+  const nome  = document.getElementById('p-nome').value.trim();
+  const desc  = document.getElementById('p-desc').value.trim();
+  const custo = parseFloat(document.getElementById('p-custo').value);
+  const venda = parseFloat(document.getElementById('p-venda').value);
+  const qtd   = parseInt(document.getElementById('p-qtd').value)||0;
+  if (!nome)              return toast('Informe o nome do móvel.','error');
+  if (isNaN(custo)||custo<0) return toast('Informe um custo válido.','error');
+  if (isNaN(venda)||venda<0) return toast('Informe um preço válido.','error');
+  if (venda<custo&&!confirm('Preço menor que custo. Salvar assim mesmo?')) return;
+  if (id) {
+    const p=DB.estoque.find(x=>x.id===parseInt(id));
+    if (p) Object.assign(p,{nome,desc,custo,venda,qtd});
+    toast('Produto atualizado!','success');
+  } else {
+    DB.estoque.push({id:Date.now(),nome,desc,custo,venda,qtd});
+    toast('Produto cadastrado!','success');
+  }
+  await salvarEstoque();
+  fm('modal-produto');
+}
+async function excluirProduto(id) {
+  if (EU?.cargo !== 'admin') return toast('Acesso negado.','error');
+  const p=DB.estoque.find(x=>x.id===id);
+  if (!p||!confirm(`Excluir "${p.nome}"?`)) return;
+  DB.estoque=DB.estoque.filter(x=>x.id!==id);
+  await salvarEstoque();
+  toast('Produto excluído.','info');
+}
+function abrirRepor(id) {
+  if (EU?.cargo !== 'admin') return toast('Acesso negado.','error');
+  const p=DB.estoque.find(x=>x.id===id); if(!p) return;
+  document.getElementById('repor-id').value=id;
+  document.getElementById('repor-nome').textContent=p.nome+' — Estoque atual: '+p.qtd+' un';
+  document.getElementById('repor-qtd').value='';
+  am('modal-repor');
+}
+async function confirmarRepor() {
+  if (EU?.cargo !== 'admin') return toast('Acesso negado.','error');
+  const id =parseInt(document.getElementById('repor-id').value);
+  const qtd=parseInt(document.getElementById('repor-qtd').value);
+  if (!qtd||qtd<=0) return toast('Informe uma quantidade válida.','error');
+  const p=DB.estoque.find(x=>x.id===id);
+  if (p) { p.qtd+=qtd; await salvarEstoque(); fm('modal-repor'); toast(`+${qtd} unidades adicionadas!`,'success'); }
+}
+
+/* ════════════════════════════════════════
+   VENDAS / APROVAÇÕES
+════════════════════════════════════════ */
+function abrirModalVenda(id) {
+  const qtdEl=document.getElementById(`qtd-${id}`);
+  const qtd=parseInt(qtdEl.value);
+  const p=DB.estoque.find(x=>x.id===id);
+  const disponivel = estoqueDisponivel(p);
+  if (!qtd||qtd<=0) return toast('Informe uma quantidade válida.','error');
+  if (qtd>disponivel) return toast(`Estoque disponível: ${disponivel} un. (${estoqueReservado(id)} já reservado${estoqueReservado(id)>1?'s':''}).`,'error');
+  vendaTemp={prodId:id,qtd};
+  const reservado = estoqueReservado(id);
+  set('mv-info',`
+    <div class="info-box">
+      <p style="font-weight:700;font-size:.98rem;margin-bottom:8px">${p.nome}</p>
+      <p style="color:var(--text-muted);font-size:.82rem;margin-bottom:14px">${p.desc||''}</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div><p style="font-size:.69rem;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px">Quantidade</p>
+             <p style="font-weight:700;font-size:1.12rem">${qtd} un</p></div>
+        <div><p style="font-size:.69rem;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px">Total da Venda</p>
+             <p style="font-weight:700;font-size:1.12rem;color:var(--success)">R$ ${brl(p.venda*qtd)}</p></div>
+      </div>
+      ${reservado>0?`<p style="font-size:.76rem;color:#818CF8;margin-top:10px">🔒 ${reservado} un reservadas por outros vendedores</p>`:''}
+    </div>
+    <p style="font-size:.79rem;color:var(--text-muted);text-align:center">O pedido será enviado ao administrador para aprovação.</p>`);
+  am('modal-venda');
+}
+async function confirmarVenda() {
+  if (!vendaTemp) return;
+  const {prodId,qtd}=vendaTemp;
+  const p=DB.estoque.find(x=>x.id===prodId);
+  const disponivel = estoqueDisponivel(p);
+  if (qtd>disponivel) { toast(`Estoque insuficiente. Disponível: ${disponivel} un.`,'error'); fm('modal-venda'); vendaTemp=null; return; }
+  DB.pedidos.push({
+    idPedido:Date.now(), uid:EU.uid, prodId:p.id, nome:p.nome, qtd,
+    precoUnit:p.venda, custoUnit:p.custo, total:p.venda*qtd,
+    vendedor:EU.nome, dataCriado:new Date().toISOString()
+  });
+  await salvarPedidos();
+  fm('modal-venda');
+  const el=document.getElementById(`qtd-${prodId}`); if(el) el.value='';
+  vendaTemp=null;
+  toast('Pedido enviado para aprovação! Estoque reservado.','success');
+  atualizarBadges();
+}
+async function aprovarPedido(idPedido) {
+  if (EU?.cargo !== 'admin') return toast('Acesso negado.','error');
+  const idx=DB.pedidos.findIndex(x=>x.idPedido===idPedido); if(idx<0) return;
+  const ped=DB.pedidos[idx];
+  const p=DB.estoque.find(x=>x.id===ped.prodId);
+  if (!p) return toast('Produto não encontrado.','error');
+  if (p.qtd<ped.qtd) return toast(`Estoque físico insuficiente! Disponível: ${p.qtd}`,'error');
+  p.qtd -= ped.qtd;
+  DB.vendas.push({...ped, dataAprovado:new Date().toISOString()});
+  DB.pedidos.splice(idx,1);
+  await Promise.all([salvarEstoque(), salvarPedidos(), salvarVendas()]);
+  toast(`Pedido de ${ped.vendedor} aprovado! Estoque baixado.`,'success');
+}
+async function rejeitarPedido(idPedido) {
+  if (EU?.cargo !== 'admin') return toast('Acesso negado.','error');
+  if (!confirm('Rejeitar este pedido?')) return;
+  DB.pedidos=DB.pedidos.filter(x=>x.idPedido!==idPedido);
+  await salvarPedidos();
+  toast('Pedido rejeitado.','info');
+}
+function atualizarBadges() {
+  const b=document.getElementById('nav-badge'); if(!b) return;
+  if (DB.pedidos.length) { b.textContent=DB.pedidos.length; b.style.display='inline'; }
+  else b.style.display='none';
+}
+
+/* ════════════════════════════════════════
+   EDITAR / EXCLUIR VENDAS (admin)
+════════════════════════════════════════ */
+async function excluirVenda(idPedido) {
+  if (EU?.cargo !== 'admin') return toast('Acesso negado.','error');
+  const idx = DB.vendas.findIndex(x => x.idPedido === idPedido);
+  if (idx < 0) return;
+  const v = DB.vendas[idx];
+  if (!confirm(`Excluir venda de "${v.vendedor}" — ${v.qtd}× ${v.nome}?\n\nOBS: o estoque NÃO será estornado automaticamente. Faça o ajuste manual se necessário.`)) return;
+  DB.vendas.splice(idx, 1);
+  await salvarVendas();
+  toast('Venda excluída.','info');
+}
+
+function abrirEditarVenda(idPedido) {
+  if (EU?.cargo !== 'admin') return toast('Acesso negado.','error');
+  const v = DB.vendas.find(x => x.idPedido === idPedido);
+  if (!v) return toast('Venda não encontrada.','error');
+  document.getElementById('ev-id').value      = idPedido;
+  document.getElementById('ev-info').textContent = `${v.qtd}× ${v.nome} — Vendedor: ${v.vendedor}`;
+  document.getElementById('ev-preco-orig').textContent = `Preço tabela: R$ ${brl(v.precoUnit * v.qtd)} · Custo: R$ ${brl(v.custoUnit * v.qtd)}`;
+  document.getElementById('ev-total').value   = v.total.toFixed(2);
+  document.getElementById('ev-erro').style.display = 'none';
+  am('modal-editar-venda');
+}
+
+async function salvarEdicaoVenda() {
+  if (EU?.cargo !== 'admin') return toast('Acesso negado.','error');
+  const idPedido = parseInt(document.getElementById('ev-id').value);
+  const novoTotal = parseFloat(document.getElementById('ev-total').value);
+  const err = document.getElementById('ev-erro');
+  err.style.display = 'none';
+  if (isNaN(novoTotal) || novoTotal <= 0) {
+    err.textContent = 'Informe um valor válido maior que zero.'; err.style.display = 'block'; return;
+  }
+  const v = DB.vendas.find(x => x.idPedido === idPedido);
+  if (!v) return;
+  const precoTabela = v.precoUnit * v.qtd;
+  if (novoTotal > precoTabela && !confirm(`O novo total (R$ ${brl(novoTotal)}) é maior que o preço de tabela (R$ ${brl(precoTabela)}). Confirmar?`)) return;
+  v.total = novoTotal;
+  v.editadoPor = EU.nome;
+  v.editadoEm  = new Date().toISOString();
+  await salvarVendas();
+  fm('modal-editar-venda');
+  toast('Valor da venda atualizado!','success');
+}
+
+/* ════════════════════════════════════════
+   GERENCIAR VENDEDORES (admin)
+════════════════════════════════════════ */
+async function abrirModalVendedores() {
+  if (EU?.cargo !== 'admin') return toast('Acesso negado.','error');
+  am('modal-vendedores');
+  tabVendedor('lista');
+  await carregarVendedores();
+}
+
+function tabVendedor(tab) {
+  document.getElementById('tab-lista').style.display    = tab==='lista' ? '' : 'none';
+  document.getElementById('tab-novo').style.display     = tab==='novo'  ? '' : 'none';
+  document.getElementById('tab-lista-btn').classList.toggle('active', tab==='lista');
+  document.getElementById('tab-novo-btn').classList.toggle('active',  tab==='novo');
+  if (tab==='novo') {
+    ['nv-nome','nv-email','nv-senha'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+    const err = document.getElementById('nv-erro'); if(err) err.style.display='none';
+  }
+}
+
+async function carregarVendedores() {
+  const el = document.getElementById('lista-vendedores');
+  if (!el) return;
+  el.innerHTML = `<div style="text-align:center;padding:1.5rem"><div class="spinner" style="margin:0 auto"></div></div>`;
+  try {
+    const todos = await window._fb.listarVendedores();
+    const vendedores = todos.filter(u => u.uid !== EU.uid && u.cargo !== 'excluido'); // não mostra o próprio admin nem excluídos
+    if (!vendedores.length) {
+      el.innerHTML = `<div class="empty-state" style="padding:2rem"><div class="empty-icon">👥</div><p>Nenhum vendedor cadastrado ainda.</p></div>`;
+      return;
+    }
+    el.innerHTML = vendedores.map(v=>{
+      const inic = (v.nome||'V').split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase();
+      const role = v.cargo==='admin' ? '⭐ Admin' : '👤 Vendedor';
+      return `<div class="vendedor-row">
+        <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
+          <div class="vendedor-avatar">${inic}</div>
+          <div style="min-width:0">
+            <div style="font-weight:600;font-size:.88rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${v.nome}</div>
+            <div style="font-size:.73rem;color:var(--text-muted)">${v.email||''} · ${role}</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:4px;flex-shrink:0">
+          <button class="btn btn-ghost btn-sm btn-icon" onclick="abrirTrocarSenhaUsuario('${v.uid}','${v.nome.replace(/'/g,"\\'")}')" title="Trocar senha">🔑</button>
+          ${v.cargo!=='admin'?`<button class="btn btn-danger btn-sm btn-icon" onclick="excluirVendedor('${v.uid}','${v.nome.replace(/'/g,"\\'")}')" title="Remover acesso">🗑️</button>`:''}
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    el.innerHTML = `<div class="alerta-bar">⚠️ Erro ao carregar: ${e.message}</div>`;
+  }
+}
+
+async function criarUsuario() {
+  if (EU?.cargo !== 'admin') return toast('Acesso negado.','error');
+  const nome  = document.getElementById('nv-nome').value.trim();
+  const email = document.getElementById('nv-email').value.trim();
+  const senha = document.getElementById('nv-senha').value;
+  const cargo = document.getElementById('nv-cargo').value;
+  const err   = document.getElementById('nv-erro');
+  err.style.display = 'none';
+  if (!nome)         { err.textContent='Informe o nome.';   err.style.display='block'; return; }
+  if (!email)        { err.textContent='Informe o e-mail.'; err.style.display='block'; return; }
+  if (senha.length<6){ err.textContent='Senha deve ter ao menos 6 caracteres.'; err.style.display='block'; return; }
+  const btn = document.querySelector('#tab-novo .btn-primary');
+  btn.disabled=true; btn.textContent='Criando…';
+  try {
+    await window._fb.criarUsuario(email, senha, nome, cargo);
+    const label = cargo==='admin' ? 'Administrador' : 'Vendedor';
+    toast(`${label} "${nome}" criado com sucesso!`,'success');
+    tabVendedor('lista');
+    await carregarVendedores();
+  } catch(e) {
+    const msgs = {
+      'auth/email-already-in-use': 'Este e-mail já está em uso.',
+      'auth/invalid-email':        'E-mail inválido.',
+      'auth/weak-password':        'Senha muito fraca (mín. 6 caracteres).'
+    };
+    err.textContent = msgs[e.code] || ('Erro: '+e.message);
+    err.style.display = 'block';
+  } finally {
+    btn.disabled=false; btn.textContent='✔ Criar Usuário';
+  }
+}
+
+async function excluirVendedor(uid, nome) {
+  if (!confirm(`Remover acesso de "${nome}"?\n\nO login será desativado no próximo carregamento.`)) return;
+  try {
+    await window._fb.excluirPerfilVendedor(uid);
+    toast(`Acesso de "${nome}" removido.`,'info');
+    await carregarVendedores();
+  } catch(e) {
+    toast('Erro ao remover: '+e.message,'error');
+  }
+}
+
+/* ════════════════════════════════════════
+   TROCA DE SENHA
+════════════════════════════════════════ */
+function abrirTrocarMinhaSenha() {
+  document.getElementById('senha-uid').value = EU.uid;
+  document.getElementById('senha-info-txt').textContent = 'Informe sua nova senha de acesso.';
+  document.getElementById('nova-senha').value = '';
+  document.getElementById('conf-senha').value = '';
+  document.getElementById('senha-erro').style.display = 'none';
+  am('modal-senha');
+}
+
+function abrirTrocarSenhaUsuario(uid, nome) {
+  if (EU?.cargo !== 'admin') return toast('Acesso negado.','error');
+  document.getElementById('senha-uid').value = uid;
+  document.getElementById('senha-info-txt').textContent = `Definir nova senha para: ${nome}`;
+  document.getElementById('nova-senha').value = '';
+  document.getElementById('conf-senha').value = '';
+  document.getElementById('senha-erro').style.display = 'none';
+  am('modal-senha');
+}
+
+async function salvarNovaSenha() {
+  const uid    = document.getElementById('senha-uid').value;
+  const nova   = document.getElementById('nova-senha').value;
+  const conf   = document.getElementById('conf-senha').value;
+  const err    = document.getElementById('senha-erro');
+  err.style.display = 'none';
+  if (nova.length < 6) { err.textContent = 'A senha deve ter ao menos 6 caracteres.'; err.style.display='block'; return; }
+  if (nova !== conf)   { err.textContent = 'As senhas não coincidem.'; err.style.display='block'; return; }
+  const btn = document.querySelector('#modal-senha .btn-primary');
+  btn.disabled = true; btn.textContent = 'Salvando…';
+  try {
+    if (uid === EU.uid) {
+      // Troca a própria senha (usuário logado)
+      await window._fb.trocarSenha(nova);
+      toast('Senha alterada com sucesso!','success');
+    } else {
+      // Admin trocando senha de outro usuário
+      // Salva a nova senha como campo temporário no perfil para o próprio usuário redefinir
+      // ⚠️ Nota: trocar senha de outro usuário requer Firebase Admin SDK (backend).
+      // Esta implementação salva um campo "senhaPendente" que pode ser lida por uma Cloud Function.
+      await window._fb.salvar('usuarios', uid, { senhaPendente: nova, senhaPendenteEm: new Date().toISOString() });
+      toast('Senha de redefinição registrada. O usuário precisará relogar.','info');
+    }
+    fm('modal-senha');
+  } catch(e) {
+    const msgs = {
+      'auth/requires-recent-login': 'Por segurança, faça logout e login novamente antes de trocar sua senha.',
+      'auth/weak-password':         'Senha muito fraca (mín. 6 caracteres).'
+    };
+    err.textContent = msgs[e.code] || ('Erro: '+e.message);
+    err.style.display = 'block';
+  } finally {
+    btn.disabled = false; btn.textContent = '✔ Salvar Senha';
+  }
+}
+
+/* ════════════════════════════════════════
+   UTILITÁRIOS
+════════════════════════════════════════ */
+function am(id)  { document.getElementById(id).classList.add('open'); }
+function fm(id)  { document.getElementById(id).classList.remove('open'); }
+function set(id,html) { const el=document.getElementById(id); if(el) el.innerHTML=html; }
+function brl(n)  { return (isNaN(n)?0:n).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fmt(iso){ return iso?new Date(iso).toLocaleString('pt-BR'):'-'; }
+
+function toast(msg,tipo='info') {
+  const ic={success:'✅',error:'❌',info:'💡'};
+  const t=document.createElement('div');
+  t.className=`toast ${tipo}`;
+  t.innerHTML=`<span>${ic[tipo]||'💡'}</span> ${msg}`;
+  document.getElementById('toast-container').appendChild(t);
+  setTimeout(()=>{ t.classList.add('out'); setTimeout(()=>t.remove(),380); },3200);
+}
+
+/* Fechar modais */
+document.querySelectorAll('.modal-overlay').forEach(m=>{
+  m.addEventListener('click',e=>{ if(e.target===m) fm(m.id); });
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape') document.querySelectorAll('.modal-overlay.open').forEach(m=>fm(m.id));
+});
 </script>
 </body>
 </html>
