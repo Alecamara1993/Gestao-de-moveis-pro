@@ -57,7 +57,6 @@ html, body { height: 100%; }
 body {
   background: var(--bg); color: var(--text);
   font-family: 'Outfit', sans-serif; font-size: 15px;
-  overflow: hidden;
   transition: background .3s, color .3s;
 }
 
@@ -145,8 +144,8 @@ body {
 /* ══════════════════════════════════════════
    LAYOUT
 ══════════════════════════════════════════ */
-#app { display: none; height: 100vh; overflow: hidden; }
-.layout { display: flex; height: 100vh; }
+#app { display: none; min-height: 100vh; }
+.layout { display: flex; min-height: 100vh; }
 
 /* ── Sidebar ── */
 .sidebar {
@@ -234,6 +233,7 @@ body {
   padding: 1rem 1.8rem; border-bottom: 1px solid var(--border);
   display: flex; align-items: center; justify-content: space-between;
   background: var(--surface); flex-shrink: 0; transition: background .3s;
+  position: sticky; top: 0; z-index: 100;
 }
 .topbar-title    { font-size: 1.1rem; font-weight: 700; }
 .topbar-subtitle { font-size: .77rem; color: var(--text-muted); margin-top: 1px; }
@@ -357,11 +357,126 @@ textarea { resize: vertical; min-height: 68px; }
 .toast.error   { border-left: 3px solid var(--danger); }
 .toast.info    { border-left: 3px solid var(--gold); }
 
-@media (max-width:720px) {
-  .sidebar { width: 52px; }
-  .logo-text,.logo-sub,.nav-item span:not(.nav-badge),.user-info,.nav-sec,.theme-btn span:not(.pill) { display:none; }
+/* ══════════════════════════════════════════
+   RESPONSIVIDADE MOBILE / TABLET
+══════════════════════════════════════════ */
+
+/* ── Hamburguer btn ── */
+.hamburger-btn {
+  display: none; align-items: center; justify-content: center;
+  width: 38px; height: 38px; border-radius: 9px;
+  background: var(--surface2); border: 1px solid var(--border);
+  cursor: pointer; font-size: 1.15rem; flex-shrink: 0;
+  transition: all .15s; color: var(--text);
+}
+.hamburger-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+/* ── Overlay do sidebar no mobile ── */
+.sidebar-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.6); z-index: 490;
+  backdrop-filter: blur(2px);
+}
+.sidebar-overlay.open { display: block; }
+
+/* ── Tablet: sidebar encolhida ── */
+@media (max-width:900px) and (min-width:601px) {
+  :root { --sidebar-w: 60px; }
+  .logo-text,.logo-sub,.nav-label,.user-info,.nav-sec,
+  .theme-label-txt { display:none; }
   .nav-item,.theme-btn { justify-content: center; padding: 10px; }
   .user-card { justify-content: center; }
+}
+
+/* ── Mobile: sidebar como drawer ── */
+@media (max-width:600px) {
+  :root { --sidebar-w: 260px; }
+
+  body { overflow: auto; }
+
+  .hamburger-btn { display: flex; }
+
+  .layout { flex-direction: column; height: auto; min-height: 100vh; }
+
+  /* Sidebar vira drawer deslizante */
+  .sidebar {
+    position: fixed; left: -280px; top: 0; bottom: 0; z-index: 500;
+    width: var(--sidebar-w) !important;
+    transition: left .28s cubic-bezier(.4,0,.2,1), box-shadow .28s;
+    box-shadow: none;
+  }
+  .sidebar.open {
+    left: 0;
+    box-shadow: 0 0 60px rgba(0,0,0,.55);
+  }
+
+  /* Main ocupa tela toda */
+  .main { width: 100%; min-height: 100vh; }
+
+  /* Topbar compacta */
+  .topbar {
+    padding: .75rem 1rem;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .topbar-title { font-size: .97rem; }
+  .topbar-subtitle { font-size: .7rem; }
+
+  /* Content com padding menor */
+  .content-area { padding: 1rem .85rem; overflow-y: visible; }
+
+  /* Stats: 2 por linha no mobile */
+  .stat-grid { grid-template-columns: repeat(2, 1fr); gap: .7rem; margin-bottom: 1rem; }
+  .stat-value { font-size: 1.4rem; }
+  .stat-card { padding: 1rem; }
+  .stat-ico { font-size: 1.1rem; }
+
+  /* Tabelas: scroll horizontal */
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { min-width: 520px; }
+  th, td { padding: 9px 11px; font-size: .8rem; }
+
+  /* Modais: tela cheia no mobile */
+  .modal-overlay { align-items: flex-end; }
+  .modal-box {
+    width: 100% !important; max-width: 100% !important;
+    border-radius: 20px 20px 0 0 !important;
+    max-height: 92vh; padding: 1.4rem 1.2rem;
+    animation: slideUp .25s ease !important;
+  }
+  @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+
+  /* Rows (dois campos lado a lado) → empilhados */
+  .row { flex-direction: column; gap: 0; }
+  .row > * { width: 100%; }
+
+  /* Botões de ação no topbar: menor */
+  .topbar-actions .btn span { display: none; }
+  .topbar-actions .btn { padding: 8px 10px; font-size: .85rem; }
+
+  /* Filtros de data empilhados */
+  .filtro-data-bar { flex-direction: column; gap: 10px; }
+  .filtro-grupo { flex-wrap: wrap; }
+  .filtro-data-bar input[type=date],
+  .filtro-data-bar select { width: 100%; min-width: unset; }
+
+  /* Pedido/card mais compacto */
+  .pedido-card { padding: .9rem; }
+
+  /* Toast: centralizado no mobile */
+  .toast-container { right: .7rem; left: .7rem; bottom: 1rem; }
+  .toast { min-width: unset; font-size: .82rem; }
+
+  /* Topbar actions overflow */
+  #tp-actions { gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+  /* Vendedor row: compacto */
+  .vendedor-row { flex-wrap: wrap; gap: 8px; }
+}
+
+/* ── Telas muito pequenas (320px) ── */
+@media (max-width:380px) {
+  .stat-grid { grid-template-columns: 1fr; }
+  .stat-value { font-size: 1.25rem; }
 }
 
 /* ── RESERVA de estoque ── */
@@ -468,6 +583,7 @@ textarea { resize: vertical; min-height: 68px; }
 
 <!-- ══ APP ══ -->
 <div id="app">
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
 <div class="layout">
 
   <aside class="sidebar">
@@ -480,7 +596,7 @@ textarea { resize: vertical; min-height: 68px; }
     <!-- Toggle tema -->
     <div class="theme-toggle-wrap">
       <button class="theme-btn" onclick="alternarTema()" id="theme-btn">
-        <span id="theme-label">🌙 Modo Escuro</span>
+        <span id="theme-label" class="theme-label-txt">🌙 Modo Escuro</span>
         <div class="pill"><div class="knob"></div></div>
       </button>
     </div>
@@ -499,9 +615,12 @@ textarea { resize: vertical; min-height: 68px; }
 
   <div class="main">
     <header class="topbar">
-      <div>
-        <div class="topbar-title" id="tp-titulo">Dashboard</div>
-        <div class="topbar-subtitle" id="tp-sub">Visão geral do negócio</div>
+      <div style="display:flex;align-items:center;gap:10px;min-width:0">
+        <button class="hamburger-btn" id="hamburger-btn" onclick="toggleSidebar()" title="Menu">☰</button>
+        <div style="min-width:0">
+          <div class="topbar-title" id="tp-titulo">Dashboard</div>
+          <div class="topbar-subtitle" id="tp-sub">Visão geral do negócio</div>
+        </div>
       </div>
       <div class="topbar-actions" id="tp-actions"></div>
     </header>
@@ -1007,6 +1126,26 @@ function atualizarLabelTema() {
 }
 
 /* ════════════════════════════════════════
+   SIDEBAR MOBILE — abrir/fechar drawer
+════════════════════════════════════════ */
+function toggleSidebar() {
+  const sidebar  = document.querySelector('.sidebar');
+  const overlay  = document.getElementById('sidebar-overlay');
+  const isOpen   = sidebar.classList.contains('open');
+  if (isOpen) { closeSidebar(); } else {
+    sidebar.classList.add('open');
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+}
+function closeSidebar() {
+  document.querySelector('.sidebar').classList.remove('open');
+  const overlay = document.getElementById('sidebar-overlay');
+  if (overlay) overlay.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+/* ════════════════════════════════════════
    SIDEBAR / NAVEGAÇÃO
 ════════════════════════════════════════ */
 function configurarSidebar() {
@@ -1016,25 +1155,25 @@ function configurarSidebar() {
   if (isAdmin) {
     nav.innerHTML = `
       <span class="nav-sec">Principal</span>
-      <button class="nav-item" onclick="irPara('dash',this)"    id="nav-dash"><span class="nav-icon">📊</span><span>Dashboard</span></button>
-      <button class="nav-item" onclick="irPara('estoque',this)" id="nav-estoque"><span class="nav-icon">📦</span><span>Estoque</span></button>
+      <button class="nav-item" onclick="irPara('dash',this);closeSidebar()"    id="nav-dash"><span class="nav-icon">📊</span><span class="nav-label">Dashboard</span></button>
+      <button class="nav-item" onclick="irPara('estoque',this);closeSidebar()" id="nav-estoque"><span class="nav-icon">📦</span><span class="nav-label">Estoque</span></button>
       <span class="nav-sec">Vendas</span>
-      <button class="nav-item" onclick="irPara('alertas',this)" id="nav-alertas">
-        <span class="nav-icon">🔔</span><span>Aprovações</span>
+      <button class="nav-item" onclick="irPara('alertas',this);closeSidebar()" id="nav-alertas">
+        <span class="nav-icon">🔔</span><span class="nav-label">Aprovações</span>
         <span class="nav-badge" id="nav-badge">0</span>
       </button>
-      <button class="nav-item" onclick="irPara('historico',this)" id="nav-historico"><span class="nav-icon">📋</span><span>Histórico</span></button>
+      <button class="nav-item" onclick="irPara('historico',this);closeSidebar()" id="nav-historico"><span class="nav-icon">📋</span><span class="nav-label">Histórico</span></button>
       <span class="nav-sec">Administração</span>
-      <button class="nav-item" onclick="abrirModalVendedores()" id="nav-vendedores"><span class="nav-icon">👥</span><span>Usuários</span></button>
-      <button class="nav-item" onclick="abrirTrocarMinhaSenha()" id="nav-minha-senha"><span class="nav-icon">🔑</span><span>Minha Senha</span></button>`;
+      <button class="nav-item" onclick="abrirModalVendedores();closeSidebar()" id="nav-vendedores"><span class="nav-icon">👥</span><span class="nav-label">Usuários</span></button>
+      <button class="nav-item" onclick="abrirTrocarMinhaSenha();closeSidebar()" id="nav-minha-senha"><span class="nav-icon">🔑</span><span class="nav-label">Minha Senha</span></button>`;
     irPara('dash', document.getElementById('nav-dash'));
   } else {
     nav.innerHTML = `
       <span class="nav-sec">Vendas</span>
-      <button class="nav-item" onclick="irPara('estoque',this)"     id="nav-estoque"><span class="nav-icon">📦</span><span>Catálogo</span></button>
-      <button class="nav-item" onclick="irPara('meus-pedidos',this)" id="nav-mp"><span class="nav-icon">📋</span><span>Meus Pedidos</span></button>
+      <button class="nav-item" onclick="irPara('estoque',this);closeSidebar()"     id="nav-estoque"><span class="nav-icon">📦</span><span class="nav-label">Catálogo</span></button>
+      <button class="nav-item" onclick="irPara('meus-pedidos',this);closeSidebar()" id="nav-mp"><span class="nav-icon">📋</span><span class="nav-label">Meus Pedidos</span></button>
       <span class="nav-sec">Conta</span>
-      <button class="nav-item" onclick="abrirTrocarMinhaSenha()" id="nav-minha-senha"><span class="nav-icon">🔑</span><span>Minha Senha</span></button>`;
+      <button class="nav-item" onclick="abrirTrocarMinhaSenha();closeSidebar()" id="nav-minha-senha"><span class="nav-icon">🔑</span><span class="nav-label">Minha Senha</span></button>`;
     irPara('estoque', document.getElementById('nav-estoque'));
   }
 }
